@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use utf8;
+use feature ":5.28";
+use feature qw<refaliasing  declared_refs>;
+use strictures 2;
+use autodie ':all';
+use open qw<:std :encoding(UTF-8)>;
+use experimental qw<signatures re_strict refaliasing script_run alpha_assertions>;
+use re 'strict';
+use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
+use Config::PL;
+use Cwd::utf8 qw<getcwd>;
+use File::Spec::Functions qw<catfile>;
+use Const::Fast qw<const>;
+use File::Basename qw<basename>;
+use File::Basename::Extra qw<basename_suffix>;
+use IPC::System::Simple qw<systemx>;
+use File::XDG;
+use DDP;
+no autovivification;
+
+# use Encode qw<decode encode>;
+@ARGV = map { decode_utf8($_) } @ARGV;
+
+# ranger's rifle like file opener
+my $xdg = File::XDG->new(name => 'nagasa');
+const my $CONFIG_FILE => $xdg->config_home->file('config.pl')->stringify;
+
+my sub run_program ($command, $file) {
+  systemx($command, $file);
+}
+
+my sub main ($config_file, $args) {
+  my $file = $args->[0];
+  my $cwd = getcwd();
+  my $config = config_do( $config_file);
+  my $ext = substr basename_suffix($file), 1;
+  
+  run_program($config->{$ext}, $file);
+  
+}
+
+main($CONFIG_FILE, \@ARGV);

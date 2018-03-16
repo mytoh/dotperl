@@ -1,0 +1,5 @@
+#!/usr/bin/env perl
+
+use feature 'say';
+
+say join "\n", split q/:/, $ENV{PERL5LIB}
