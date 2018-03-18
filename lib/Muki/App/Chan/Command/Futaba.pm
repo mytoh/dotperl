@@ -1,5 +1,6 @@
-#!/usr/bin/env perl
+package Muki::App::Chan::Command::Futaba;
 
+use Muki::App::Chan -command;
 use utf8;
 use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;
@@ -13,20 +14,19 @@ use File::Glob qw<:bsd_glob>;
 use File::Spec::Functions qw<catfile>;
 use File::Basename::Extra qw<basename>;
 use Path::Tiny qw<path>;
-use Web::Query::LibXML qw<wq>;
 use Term::ANSIColor qw<colored>;
 use URI;
 use DDP;
-use List::AllUtils qw<first uniq>;
+use List::AllUtils qw<first uniq any>;
 use Const::Fast qw<const>;
 use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 use Furl::HTTP;
 use Net::DNS::Lite;
 use Cache::LRU;
+use Regexp::Common qw<URI>;
+# use XML::LibXML::jQuery;
+use WWW::Mechanize;
 no autovivification;
-
-# use Encode qw<decode encode>;
-@ARGV = map {decode_utf8($_)} @ARGV;
 
 const my $BOARD_SERVERS => { l => 'dat',
                              k => 'cgi',
@@ -59,7 +59,7 @@ my sub download_file ($ua, $thread, $link) {
     url => $link,
     write_file => $fh,
    );
-    close $fh;
+  close $fh;
 }
 
 my sub fetch_b_thread ($ua, $server, $board, $thread) {
@@ -86,32 +86,17 @@ my sub find_b_server ($ua, $thread) {
   first { fetch_b_thread($ua, $_, 'b', $thread)} $BOARD_SERVERS->{b}->@*;
 }
 
-my sub scrape_image_list ($ua, $server, $board, $url) {
-  my ($minor_version, $status, $message, $headers, $content) = $ua->request(method => 'GET' , url => $url );
-  my $wq = Web::Query->new_from_html($content);
-  if ($status == 200) {
-    my $links = $wq
-      ->find('a[href*=src]')
-      ->map(sub ($i, $elem) {
-              $elem->attr('href');
-            }
-           );
-  
-    my @image_links = uniq 
-      map { if ($_ =~ m{/$board/src/.*}) {
-        "https://${server}.2chan.net" . $_;
-      } else {
-        ();
-      }
-          }
-      $links->@*;
-  
-    \@image_links;
+my sub scrape_image_list ($mech, $server, $board, $url) {
+  $mech->get($url);
+  if ($mech->success) {
+    my @uris = $mech->find_all_links(tag => "a", url_regex => qr{$board/src});
+    my @images = uniq map { $_->url_abs->as_string } @uris;
+    \@images;
   } else {
     undef;
   }
-}
 
+}
 
 my sub select_server ($ua,$board, $thread) {
   if ($board eq 'b') {
@@ -121,10 +106,10 @@ my sub select_server ($ua,$board, $thread) {
   }
 }
 
-my sub get_single ($ua, $board, $thread ) {
+my sub get_single ($ua, $mech, $board, $thread ) {
   my $server = select_server($ua,$board, $thread);
   if ($server) {
-    my $image_links = scrape_image_list($ua, $server, $board, "https://${server}.2chan.net/${board}/res/${thread}.htm");
+    my $image_links = scrape_image_list($mech, $server, $board, "https://${server}.2chan.net/${board}/res/${thread}.htm");
     if ($image_links) {
       say $thread;
       my $fetch_list = find_non_existent_images($thread, $image_links);
@@ -133,21 +118,21 @@ my sub get_single ($ua, $board, $thread ) {
         foreach my $image ( $fetch_list->@* ) {
           download_file($ua, $thread, $image );
         }
-        say 'Downleaded ' . colored(['blue'], scalar( $fetch_list->@* ))  . ' files';
+        say 'Downloaded ' . colored(['blue'], scalar( $fetch_list->@* ))  . ' files';
       }
     }
   }
 
 }
 
-my sub get_all ($ua, $board) {
+my sub get_all ($ua, $mech, $board) {
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( $dirs->@* ) {
-    get_single($ua, $board, $thread );
+    get_single($ua, $mech, $board, $thread );
   }
 }
 
-my sub forever : prototype(&;$) ( $sub, $sleep ) {
+my sub forever :prototype(&;$) ( $sub, $sleep ) {
   while (1) {
     $sub->();
     sleep $sleep;
@@ -156,57 +141,73 @@ my sub forever : prototype(&;$) ( $sub, $sleep ) {
 
 my sub get ( $opt, $args ) {
   my $sleep_second = 60 * 5;
-    my $ua = Furl::HTTP->new(agent => 'Mozilla/5.0',
-                             inet_aton => \&Net::DNS::Lite::inet_aton);
+  my $ua = Furl::HTTP->new(agent => 'Mozilla/5.0',
+                           inet_aton => \&Net::DNS::Lite::inet_aton);
+  my $mech = WWW::Mechanize->new();
+  $mech->agent_alias('Windows Mozilla');
   if ( $opt->all ) {
     my $board = $args->[0];
     if ( $opt->repeat ) {
-      forever { get_all($ua, $board); } $sleep_second;
+      forever { get_all($ua, $mech, $board); } $sleep_second;
     } else {
-      get_all($ua, $board);
+      get_all($ua, $mech, $board);
     }
   } else {
     my $board  = $args->[0];
     my $thread = $args->[1];
     if ( $opt->repeat ) {
-      forever { get_single($ua, $board, $thread ); } $sleep_second;
+      forever { get_single($ua, $mech, $board, $thread ); } $sleep_second;
     } else {
-      get_single($ua, $board, $thread );
+      get_single($ua, $mech, $board, $thread );
     }
   }
 }
 
-my sub main ($args) {
-  my $usage_desc = '%c %o <board> <thread>';
-  my @opt_spec   = (
-    [ 'all|a',    
-      "process all directories in current directory" ],
-    [ 'repeat|r', 
-      "repeat download forever" ],
-    [ 'help', 
-      'print usage message and exit', 
-      {
-        shortcircuit => 1 
-      }
-     ],
-   );
+sub abstract { 
+  "Futaba" 
+}
 
-  my ( $opt, $usage ) = describe_options(
-    $usage_desc,
-    @opt_spec,
+sub description { "futaba script" }
+
+sub opt_spec {
+  (
+    [ 'all|a',    "process all directories in current directory" ],
+    [ 'repeat|r', "repeat download forever" ],
     +{
-      getopt_conf => [ "posix_default",
+      getopt_conf => [ "posix_default", 
                        "no_ignore_case",
-                       "bundling", 
+                       "bundling",
                        "auto_help" ]
     }
    );
+}
 
-  if ( $opt->help ) {
-    print( $usage->text );
+sub validate_args ($self, $opt, $args) {
+
+  if (defined $args->[0]) {
+    unless ( $args->[0] =~ /$RE{URI}{HTTP}{-scheme => '(https|http)'}/ || $args->[0] =~ /\A\w+\z/ ) {
+      $self->usage_error('First argument should be Board Name or URL');
+    }
   } else {
-    get( $opt, $args );
+    $self->usage_error("Specify Board Name");
+  }
+
+  if (defined $args->[1]) {
+    $self->usage_error("Thread should be Number") unless is_number $args->[1];
   }
 }
 
-main(\@ARGV);
+sub usage_desc {
+  'yotsuba %o <board> <thread>';
+}
+
+
+
+sub execute ($self, $opt, $args) {
+  
+  $Net::DNS::Lite::CACHE = Cache::LRU->new( size => 256, );
+
+  get( $opt, $args );
+}
+
+!!1;

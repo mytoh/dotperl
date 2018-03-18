@@ -20,7 +20,8 @@ use IPC::System::Simple qw<systemx>;
 my sub yotsuba ($dir) {
     my @children = qw<huone kuvat sivusto 4chan>;
     local $CWD = catdir( <~>, @children, $dir );
-    systemx( 'yotsuba.pl', '--all', $dir );
+    # systemx( 'yotsuba.pl', '--all', $dir );
+    systemx( 'chan.pl', 'yotsuba', '--all', $dir );
 }
 
 my sub main ($dirs) {
