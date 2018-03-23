@@ -31,11 +31,15 @@ my sub run_program ($command, $file) {
   systemx($command, $file);
 }
 
+my sub remove_first_char ($string) {
+  substr $string, 1;
+}
+
 my sub main ($config_file, $args) {
   my $file = $args->[0];
   my $cwd = getcwd();
   my $config = config_do( $config_file);
-  my $ext = substr basename_suffix($file), 1;
+  my $ext = remove_first_char(basename_suffix($file));
   
   run_program($config->{$ext}, $file);
   
