@@ -6,7 +6,7 @@ use File::chdir;
 use File::MimeInfo;
 use Archive::Extract;
 use Archive::Rar::Passthrough;
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use feature ":5.28";
 use experimental qw<signatures re_strict>;
@@ -55,5 +55,4 @@ my sub main ($args) {
   $sub->($file, $todir);
 }
 
-@ARGV = map { decode_utf8($_) } @ARGV;
 main(\@ARGV);

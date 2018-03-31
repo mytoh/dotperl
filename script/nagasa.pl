@@ -5,10 +5,10 @@ use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;
 use strictures 2;
 use autodie ':all';
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict refaliasing script_run alpha_assertions>;
 use re 'strict';
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 use Config::PL;
 use Cwd::utf8 qw<getcwd>;
 use File::Spec::Functions qw<catfile>;
@@ -19,9 +19,6 @@ use IPC::System::Simple qw<systemx>;
 use File::XDG;
 use DDP;
 no autovivification;
-
-# use Encode qw<decode encode>;
-@ARGV = map { decode_utf8($_) } @ARGV;
 
 # ranger's rifle like file opener
 my $xdg = File::XDG->new(name => 'nagasa');

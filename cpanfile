@@ -42,4 +42,5 @@ requires 'strictures';
 requires 'XML::LibXML::jQuery';
 requires 'Web::Query';
 requires 'WWW::Mechanize';
+requires 'utf8::all';
 

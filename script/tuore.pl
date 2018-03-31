@@ -5,6 +5,7 @@ use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;
 use strictures 2;
 use autodie ':all';
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict refaliasing script_run>;
 use re 'strict';
@@ -15,10 +16,7 @@ use DDP;
 use Term::ANSIColor;
 use List::Flatten::XS qw<flatten>;
 use Config::PL;
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 no autovivification;
-# use Encode qw<decode encode>;
-@ARGV = map { decode_utf8($_) } @ARGV;
 
 my sub create_spec_to_links ($cwd, $dest, $spec) {
   my @keys = keys $spec->%*;

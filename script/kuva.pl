@@ -9,13 +9,10 @@ use open qw<:std :encoding(UTF-8)>;
 use experimental
   qw<signatures re_strict refaliasing script_run alpha_assertions>;
 use re 'strict';
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
+use utf8::all;
 use IPC::System::Simple qw<systemx>;
 use File::Basename qw<dirname>;
 no autovivification;
-
-# use Encode qw<decode encode>;
-@ARGV = map {decode_utf8($_)} @ARGV;
 
 my sub open_file($file) {
     systemx( qw<feh -Z -F -B black>, dirname($file) );

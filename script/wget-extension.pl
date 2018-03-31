@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use warnings qw<FATAL utf8>;
 use feature ":5.28";
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;
 use re 'strict';
@@ -12,8 +13,6 @@ use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 use URI;
 use Path::Tiny qw<path>;
 use File::chdir;
-# use Encode qw<decode encode>;
-@ARGV = map { decode_utf8($_) } @ARGV;
 
 #  [[https://www.youtube.com/watch?v=oWRBjLy8B-I][Wget Batch Download From Website - Linux CLI - YouTube]] :google:download:wget:
 

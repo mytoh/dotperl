@@ -7,12 +7,11 @@ use warnings qw<FATAL utf8>;
 use feature ":5.28";
 use feature qw<refaliasing declared_refs>;
 use experimental qw<signatures re_strict refaliasing script_run>;
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use re 'strict';
-use Encode qw<decode_utf8>;
 
 use ExtUtils::Installed;
-@ARGV = map { decode_utf8($_, 1) } @ARGV;
 
 my sub print_modules ($args) {
   my $cpan = $args->[0] // '';

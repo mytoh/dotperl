@@ -4,14 +4,11 @@ use utf8;
 use autodie ':all';
 use feature ":5.28";
 use strictures 2;
+use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;
 use re 'strict';
 use IPC::System::Simple qw<systemx>;
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
-# use Encode qw<decode encode>;
-@ARGV = map { decode_utf8($_) } @ARGV;
-
 
 my sub tmux_command ($command, @args) {
   systemx('tmux', $command, @args);
