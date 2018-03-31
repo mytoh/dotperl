@@ -1,0 +1,148 @@
+package Muki::App::Booru::Command::Danbooru;
+
+use Muki::App::Booru -command;
+use utf8;
+use feature ":5.28";
+use feature qw<refaliasing  declared_refs>;
+use strictures 2;
+use autodie ':all';
+use open qw<:std :encoding(UTF-8)>;
+use experimental qw<signatures re_strict refaliasing script_run>;
+use re 'strict';
+use Getopt::Long::Descriptive qw<describe_options>;
+use File::Glob qw<:bsd_glob>;
+use File::Spec::Functions qw<catfile>;
+use File::Basename::Extra qw<basename>;
+use Path::Tiny qw<path>;
+use Term::ANSIColor qw<colored>;
+use URI;
+use DDP;
+use List::AllUtils qw<first uniq any>;
+use Const::Fast qw<const>;
+use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
+use Furl::HTTP;
+use Net::DNS::Lite;
+use Cache::LRU;
+use LWP::UserAgent;
+use JSON::MaybeUTF8 qw(:v1);
+use File::Basename::Extra qw<basename>;
+no autovivification;
+
+my sub format_tags ($tags) {
+    if ( scalar $tags->@* > 1 ) {
+        join " ", $tags->@*;
+    }
+    else {
+        $tags->[0];
+    }
+}
+
+my sub is_get_successed ($res) {
+    if ( $res->is_success && $res->content eq "[]" ) {
+        !!0;
+    }
+    elsif ( $res->is_success ) {
+        !!1;
+    }
+    else {
+        !!0;
+    }
+}
+
+my sub get_posts ( $page, $tags ) {
+    my $ua = LWP::UserAgent->new;
+    $ua->agent("Mozilla/5.0");
+
+    my $formatted_tags = format_tags($tags);
+    my $limit          = 100;
+
+    my $url = URI->new("https://danbooru.donmai.us/posts.json");
+    $url->query_form(
+        tags  => $formatted_tags,
+        limit => $limit,
+        page  => $page
+    );
+
+    my $req = HTTP::Request->new( GET => $url );
+
+    my $res = $ua->request($req);
+
+    if ( is_get_successed($res) ) {
+        say "Getting page ${page}";
+        decode_json_text( $res->content );
+    }
+    else {
+        !!0;
+    }
+}
+
+my sub download_post ( $ua, $post ) {
+    if ( defined $post->{'large_file_url'} ) {
+        my $output_file =
+          $post->{'id'} . '-' . basename( $post->{'large_file_url'} );
+        if ( !-f $output_file ) {
+            my $fh  = path($output_file)->openw_raw;
+            my $url = URI->new_abs( $post->{'large_file_url'},
+                'https://danbooru.donmai.us' );
+            $ua->request(
+                method     => 'GET',
+                url        => $url,
+                write_file => $fh
+            );
+
+            close $fh;
+        }
+    }
+}
+
+my sub download_posts ($posts) {
+    my $ua = Furl::HTTP->new(
+        agent     => 'Mozilla/5.0',
+        inet_aton => \&Net::DNS::Lite::inet_aton
+    );
+    foreach my $post ( $posts->@* ) {
+        download_post( $ua, $post );
+    }
+}
+
+my sub start_loop ( $page, $tags ) {
+    my $posts = get_posts( $page, $tags );
+    if ($posts) {
+        download_posts($posts);
+        __SUB__->( $page + 1, $tags );
+    }
+    else {
+        say "End";
+    }
+}
+
+sub abstract { "Danbooru" }
+
+sub description { "Get images from danbooru" }
+
+sub opt_spec {
+    (
+        [
+            'page|p=i',
+            "page number which start downloading from",
+            { default => 1 }
+        ],
+        +{
+            getopt_conf =>
+              [ "posix_default", "no_ignore_case", "bundling", "auto_help" ]
+        }
+    );
+}
+
+sub validate_args ($self, $opt, $args) {
+
+    # no args allowed but options!
+    # $self->usage_error("No args allowed") if @$args;
+}
+
+sub execute ($self, $opt, $tags) {
+    say join ', ', $tags->@*;
+    start_loop( $opt->page, $tags );
+}
+
+!!1;
