@@ -35,8 +35,8 @@ my sub create_link_list ($cwd, $dest, $file_specs) {
 
 my sub create_links ($list) {
   foreach my $file ($list->@*) {
-    my $old = $file->{old};
-    my $new = $file->{new};
+    my $old = $file->{'old'};
+    my $new = $file->{'new'};
     if ( -f $new) {
       say "File " . $new . " exists!";
     } elsif ( -l $new || ! -e $new) {
@@ -52,8 +52,8 @@ my sub command_list ($args) {
   my $cwd = getcwd();
   my $conf = config_do( catfile($cwd, $conf_file));
 
-  foreach my $link (create_link_list($cwd, $dest, $conf->{files})->@*) {
-    say colored(['green'], $link->{new}) .  " => " .  colored(['yellow'], $link->{old});
+  foreach my $link (create_link_list($cwd, $dest, $conf->{'files'})->@*) {
+    say colored(['green'], $link->{'new'}) .  " => " .  colored(['yellow'], $link->{'old'});
   }
 }
 
@@ -63,7 +63,7 @@ my sub command_link($args) {
   my $cwd = getcwd();
   my $conf = config_do( catfile($cwd, $conf_file));
 
-  create_links(create_link_list($cwd, $dest, $conf->{files}));
+  create_links(create_link_list($cwd, $dest, $conf->{'files'}));
 }
 
 my sub command_help() {

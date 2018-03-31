@@ -1,3 +1,4 @@
 
 [-NamingConventions::Capitalization]
 [-ValuesAndExpressions::ProhibitAccessOfPrivateData]
+[-Subroutines::ProhibitSubroutinePrototypes]

@@ -5,12 +5,3 @@ use Project::Libs;
 use Muki::App::Chan;
 
 Muki::App::Chan->run;
-
-
-
-
-
-
-
-
-

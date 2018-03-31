@@ -1,6 +1,5 @@
 use Rex;
 
-
 desc 'test';
 task 'df' => sub {
   say scalar run 'df -h';
