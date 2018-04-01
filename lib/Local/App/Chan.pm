@@ -1,4 +1,4 @@
-package Muki::App::Booru;
+package Local::App::Chan;
 
 use App::Cmd::Setup -app;
 

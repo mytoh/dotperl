@@ -1,6 +1,6 @@
-package Muki::App::Chan::Command::Futaba;
+package Local::App::Chan::Command::Futaba;
 
-use Muki::App::Chan -command;
+use Local::App::Chan -command;
 use utf8;
 use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;

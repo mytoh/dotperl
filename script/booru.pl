@@ -2,6 +2,6 @@
 
 use strict;
 use Project::Libs;
-use Muki::App::Booru;
+use Local::App::Booru;
 
-Muki::App::Booru->run;
+Local::App::Booru->run;

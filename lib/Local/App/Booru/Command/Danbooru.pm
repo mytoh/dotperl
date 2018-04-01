@@ -1,6 +1,6 @@
-package Muki::App::Booru::Command::Danbooru;
+package Local::App::Booru::Command::Danbooru;
 
-use Muki::App::Booru -command;
+use Local::App::Booru -command;
 use utf8;
 use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;

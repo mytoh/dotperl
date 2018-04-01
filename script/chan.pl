@@ -2,6 +2,6 @@
 
 use strict;
 use Project::Libs;
-use Muki::App::Chan;
+use Local::App::Chan;
 
-Muki::App::Chan->run;
+Local::App::Chan->run;

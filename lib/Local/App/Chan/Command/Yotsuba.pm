@@ -1,6 +1,6 @@
-package Muki::App::Chan::Command::Yotsuba;
+package Local::App::Chan::Command::Yotsuba;
 
-use Muki::App::Chan -command;
+use Local::App::Chan -command;
 use feature ":5.28";
 use feature qw<refaliasing  declared_refs>;
 use utf8;

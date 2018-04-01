@@ -1,5 +1,5 @@
 
-package Muki::Util;
+package Local::Util;
 
 use utf8;
 use feature ":5.28";
