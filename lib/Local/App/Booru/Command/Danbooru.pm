@@ -25,7 +25,6 @@ use Net::DNS::Lite;
 use Cache::LRU;
 use LWP::UserAgent;
 use JSON::MaybeUTF8 qw(:v1);
-use File::Basename::Extra qw<basename>;
 no autovivification;
 
 my sub format_tags ($tags) {
