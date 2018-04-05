@@ -182,8 +182,7 @@ my sub get ( $opt, $args ) {
         }
     }
     else {
-        $obj->{'board'}  = $args->[0];
-        $obj->{'thread'} = $args->[1];
+        $obj->@{qw<board thread>}  = $args->@[0, 1];
         if ( $opt->repeat ) {
             forever { get_single($obj); } $sleep_second;
         }
