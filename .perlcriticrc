@@ -1,4 +1,9 @@
+ 
+# .perlcriticrc
+theme = freenode
+severity = 1
 
 [-NamingConventions::Capitalization]
 [-ValuesAndExpressions::ProhibitAccessOfPrivateData]
 [-Subroutines::ProhibitSubroutinePrototypes]
+
