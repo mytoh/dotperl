@@ -1,4 +1,3 @@
-requires "FindBin::libs", '== 2.012001';
 requires 'App::Cmd';
 requires 'Archive::Extract';
 requires 'Archive::Rar::Passthrough';
@@ -28,7 +27,6 @@ requires 'List::AllUtils';
 requires 'List::Flatten::XS';
 requires 'Net::DNS::Lite';
 requires 'Path::Tiny';
-requires "FindBin::libs", '== 2.12';
 requires 'Project::Libs';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
