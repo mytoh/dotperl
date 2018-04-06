@@ -13,8 +13,7 @@ use re 'strict';
 use List::AllUtils qw<reduce>;
 use Ref::Util qw<is_plain_arrayref>;
 
-use Exporter 'import';
-our @EXPORT_OK = qw<pipeline compose>;
+use Exporter::Shiny qw<pipeline compose>;
 
 sub pipeline (@fns) {
   my $sub = sub ($param) {
