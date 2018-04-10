@@ -2,12 +2,12 @@
 
 use utf8;
 use feature ":5.28";
-use feature qw<refaliasing  declared_refs>;
 use strictures 2;
 use autodie ':all';
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
-use experimental qw<signatures re_strict refaliasing script_run>;
+use experimental qw<signatures re_strict refaliasing declared_refs 
+                    script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
 use Cwd::utf8 qw<getcwd>;
 use File::Spec::Functions qw<catfile>;

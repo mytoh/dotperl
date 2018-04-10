@@ -3,12 +3,12 @@ package Local::Util;
 
 use utf8;
 use feature ":5.28";
-use feature qw<refaliasing  declared_refs>;
 use strict;
 use warnings;
 use strictures 2;
 use open qw<:std :encoding(UTF-8)>;
-use experimental qw<signatures re_strict refaliasing script_run>;
+use experimental qw<signatures re_strict refaliasing declared_refs 
+                    script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
 use List::AllUtils qw<reduce>;
 use Ref::Util qw<is_plain_arrayref>;

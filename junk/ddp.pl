@@ -5,8 +5,8 @@ use warnings;
 use utf8;
 use DDP;
 use Scalar::Util qw(reftype);
-use feature qw(say signatures);
-use experimental qw(signatures);
+use experimental qw<signatures re_strict refaliasing declared_refs 
+                    script_run alpha_assertions regex_sets const_attr>;
 
 my @array = (1, 2, 3, 4, 5);
 

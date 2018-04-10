@@ -9,8 +9,8 @@ use DDP;
  use lib "$FindBin::Bin/../lib";
 use Muki::Hash::Util;
 
-use feature qw(say signatures);
-use experimental qw(signatures);
+use experimental qw<signatures re_strict refaliasing declared_refs 
+                    script_run alpha_assertions regex_sets const_attr>;
 
 
 my $h = Muki:Hash::Util->new;

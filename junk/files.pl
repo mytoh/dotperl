@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use utf8;
-use feature qw(say switch signatures);
-use experimental qw(smartmatch signatures);
+use experimental qw<signatures re_strict refaliasing declared_refs 
+                    script_run alpha_assertions regex_sets const_attr>;
 
 use File::HomeDir;
 use File::Spec::Functions;
