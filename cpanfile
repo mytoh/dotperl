@@ -42,3 +42,4 @@ requires 'Web::Query';
 requires 'WWW::Mechanize';
 requires 'utf8::all';
 requires 'Exporter::Shiny';
+requires 'Unix::PID';
