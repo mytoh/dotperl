@@ -27,6 +27,9 @@ use WWW::Mechanize;
 use URI::Split qw<uri_split>;
 use List::UtilsBy qw<uniq_by>;
 use File::Basename::Extra qw<basename>;
+use Type::Params qw<compile>;
+use Types::Standard qw<-types slurpy>;
+use Local::Chan::Types qw<Board Thread>;
 use DDP;
 no autovivification;
 
@@ -45,16 +48,22 @@ my sub is_number ($x) {
 }
 
 my sub thread_directories ($dirs) {
+  state $c = compile(ArrayRef);
+  $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub make_url($base, @segments) {
+  state $c = compile(Str, slurpy ArrayRef[Str]);
+  $c->(@_);
   my $url = URI->new($base);
   $url->path_segments(@segments);
   $url;
 }
 
 my sub find_non_existent_images ( $thread, $uris) {
+  state $c = compile(Thread, ArrayRef[Object]);
+  $c->(@_);
   [ grep { 
     !-f catfile( $thread, basename($_->url_abs->path)) ;
   }
@@ -62,6 +71,8 @@ my sub find_non_existent_images ( $thread, $uris) {
 }
 
 my sub fetch_thread_data ( $mech, $board, $thread ) {
+  state $c = compile(Object, Board, Thread);
+  $c->(@_);
   my $url = make_url($BASE_URL, $board, 'res', "${thread}.html" );
   $mech->agent_alias('Windows Mozilla');
   $mech->get($url);
@@ -77,6 +88,8 @@ my sub fetch_thread_data ( $mech, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $uri) {
+  state $c = compile(Object, Thread, Object);
+  $c->(@_);
   my $output_file = catfile( $thread, basename($uri->url_abs->path));
 
   my $fh = path($output_file)->openw_raw;
@@ -90,6 +103,8 @@ my sub download_file ( $ua, $thread, $uri) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
+  state $c = compile(Object, Board, Thread);
+  $c->(@_);
   my $mech = WWW::Mechanize->new();
   my $uris = fetch_thread_data( $mech, $board, $thread );
   if ($uris->@*) {
@@ -108,6 +123,8 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
+  state $c = compile(Object, Board);
+  $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -115,6 +132,8 @@ my sub get_all ( $ua, $board ) {
 }
 
 my sub forever : prototype(&;$) ( $sub, $sleep ) {
+  state $c = compile(CodeRef, Num);
+  $c->(@_);
   while (1) {
     $sub->();
     sleep $sleep;

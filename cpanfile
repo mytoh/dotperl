@@ -43,3 +43,5 @@ requires 'WWW::Mechanize';
 requires 'utf8::all';
 requires 'Exporter::Shiny';
 requires 'Unix::PID';
+requires 'Type::Tiny';
+requires 'Type::Tiny::XS';
