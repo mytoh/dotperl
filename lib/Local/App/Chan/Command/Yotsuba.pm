@@ -23,28 +23,29 @@ use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
 use Types::Standard -types;
 use Local::Chan::Types qw<Board Thread>;
+use Return::Type;
 use DDP;
 no autovivification;
 
-my sub get_directories () {
+my sub get_directories :ReturnType(ArrayRef) () {
   my @files = path('.')->children;
   [ map { $_->stringify } grep { $_->is_dir } @files ];
 }
 
-my sub is_number ($x) {
+my sub is_number :ReturnType(Bool) ($x) {
   state $c = compile(Str);
   $c->(@_);
   state $re = qr{\A\d+\z};
   $x =~ $re;
 }
 
-my sub thread_directories ($dirs) {
+my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   state $c = compile(ArrayRef[Str]);
   $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub parse_images ( $board, $json ) {
+my sub parse_images :ReturnType(ArrayRef) ( $board, $json ) {
   state $c = compile(Board, HashRef);
   $c->(@_);
   my @images = map {
@@ -56,13 +57,13 @@ my sub parse_images ( $board, $json ) {
   \@images;
 }
 
-my sub find_non_existent_images ( $thread, $image_data ) {
+my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $image_data ) {
   state $c = compile(Thread, ArrayRef[HashRef]);
   $c->(@_);
   [ grep { !-f catfile( $thread, $_->{dest} ) } $image_data->@* ];
 }
 
-my sub fetch_thread_data ( $ua, $board, $thread ) {
+my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
   state $c = compile(Object, Board, Thread);
   $c->(@_);
   my $url = URI->new("https://a.4cdn.org");
@@ -74,7 +75,7 @@ my sub fetch_thread_data ( $ua, $board, $thread ) {
     my $data = decode_json_text($content);
     $data;
   } else {
-    !!0;
+    undef;
   }
 }
 
