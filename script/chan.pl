@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
 use strict;
-use Project::Libs;
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
 use Local::App::Chan;
 
 Local::App::Chan->run;
