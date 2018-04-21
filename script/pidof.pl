@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use feature ":5.28";
+use v5.28;
 use feature qw<refaliasing  declared_refs>;
 use utf8;
 use strictures 2;

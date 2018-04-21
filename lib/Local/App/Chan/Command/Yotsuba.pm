@@ -1,7 +1,7 @@
 package Local::App::Chan::Command::Yotsuba;
 
 use Local::App::Chan -command;
-use feature ":5.28";
+use v5.28;
 use utf8;
 use strictures 2;
 use autodie ':all';

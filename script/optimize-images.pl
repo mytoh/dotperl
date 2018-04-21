@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use strict;
 use warnings;
 use utf8;
-use feature ":5.28";
 use warnings qw<FATAL utf8>;
 use autodie ':all';
 use utf8::all;

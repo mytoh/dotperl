@@ -1,8 +1,8 @@
 package Local::App::Booru::Command::Danbooru;
 
 use Local::App::Booru -command;
+use v5.28;
 use utf8;
-use feature ":5.28";
 use strictures 2;
 use autodie ':all';
 use utf8::all;

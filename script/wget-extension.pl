@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use utf8;
 use strict;
 use warnings;
 use warnings qw<FATAL utf8>;
-use feature ":5.28";
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;

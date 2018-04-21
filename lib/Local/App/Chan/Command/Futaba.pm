@@ -1,8 +1,8 @@
 package Local::App::Chan::Command::Futaba;
 
 use Local::App::Chan -command;
+use v5.28;
 use utf8;
-use feature ":5.28";
 use strictures 2;
 use autodie ':all';
 use utf8::all;

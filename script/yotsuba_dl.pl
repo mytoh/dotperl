@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use utf8;
 use autodie ':all';
-use feature ":5.28";
 use strictures 2;
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;

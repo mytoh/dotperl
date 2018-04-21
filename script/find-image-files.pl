@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use utf8;
-use feature ":5.28";
 use strictures 2;
 use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;

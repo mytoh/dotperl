@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use strict;
 use warnings;
 use utf8;
 use Imager;
 use open ':std', ':encoding(UTF-8)';
-use feature ":5.28";
 use experimental qw<signatures>;
 
 

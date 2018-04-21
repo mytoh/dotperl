@@ -1,8 +1,8 @@
 
 package Local::Util;
 
+use v5.28;
 use utf8;
-use feature ":5.28";
 use strict;
 use warnings;
 use strictures 2;

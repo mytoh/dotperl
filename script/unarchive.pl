@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use utf8;
 use strictures 2;
 use File::chdir;
@@ -8,7 +9,6 @@ use Archive::Extract;
 use Archive::Rar::Passthrough;
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
-use feature ":5.28";
 use experimental qw<signatures re_strict>;
 use re 'strict';
 

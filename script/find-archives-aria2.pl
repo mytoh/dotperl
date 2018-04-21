@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 
+use v5.28;
 use strict;
 use warnings;
 use utf8;
 use utf8::all;
 use File::Find::Rule;
-use feature ":5.28";
 use experimental qw<signatures>;
 
 my sub find_files ($dir) {
