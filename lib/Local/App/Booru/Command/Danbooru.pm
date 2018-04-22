@@ -27,9 +27,10 @@ use LWP::UserAgent;
 use JSON::MaybeUTF8 qw(:v1);
 use Type::Params qw<compile>;
 use Types::Standard -types;
+use Return::Type;
 no autovivification;
 
-my sub format_tags ($tags) {
+my sub format_tags :ReturnType(ArrayRef) ($tags) {
   state $c = compile(ArrayRef[Str]);
   $c->(@_);
   if ( scalar $tags->@* > 1 ) {
@@ -39,7 +40,7 @@ my sub format_tags ($tags) {
   }
 }
 
-my sub is_get_successed ($res) {
+my sub is_get_successed :ReturnType(Bool) ($res) {
   state $c = compile(Object);
   $c->(@_);
   if ( $res->is_success && $res->content eq "[]" ) {
@@ -51,7 +52,7 @@ my sub is_get_successed ($res) {
   }
 }
 
-my sub get_posts ( $page, $tags ) {
+my sub get_posts :ReturnType(Maybe[HashRef]) ( $page, $tags ) {
   state $c = compile(Num, ArrayRef[Str]);
   $c->(@_);
   my $ua = LWP::UserAgent->new;
@@ -75,7 +76,7 @@ my sub get_posts ( $page, $tags ) {
     say "Getting page ${page}";
     decode_json_text( $res->content );
   } else {
-    !!0;
+    undef;
   }
 }
 
