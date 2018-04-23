@@ -30,6 +30,7 @@ use File::Basename::Extra qw<basename>;
 use Type::Params qw<compile>;
 use Types::Standard qw<-types slurpy>;
 use Local::Chan::Types qw<Board Thread>;
+use IO::Handle;
 use DDP;
 no autovivification;
 
@@ -93,6 +94,7 @@ my sub download_file ( $ua, $thread, $uri) {
   my $output_file = catfile( $thread, basename($uri->url_abs->path));
 
   my $fh = path($output_file)->openw_raw;
+  $fh->autoflush;
   $ua->request(
     method     => 'GET',
     url        => $uri->url_abs->as_string,
