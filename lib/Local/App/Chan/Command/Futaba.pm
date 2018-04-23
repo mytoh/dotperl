@@ -27,6 +27,7 @@ use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
 use Types::Standard -types;
 use Local::Chan::Types qw<Board Thread>;
+use Return::Type;
 
 # use XML::LibXML::jQuery;
 use WWW::Mechanize;
@@ -43,7 +44,7 @@ const my $BOARD_SERVERS => +{
   b  => [qw<may jun dec>]
 };
 
-my sub get_directories () {
+my sub get_directories :ReturnType(ArrayRef[Str]) () {
   my @files = path('.')->children;
   [
     map  { $_->stringify }
@@ -51,12 +52,12 @@ my sub get_directories () {
    ];
 }
 
-my sub is_number ($x) {
+my sub is_number :ReturnType(Bool) ($x) {
   state $re = qr{\A\d+\z};
   $x =~ $re;
 }
 
-my sub thread_directories ($dirs) {
+my sub thread_directories :ReturnType(ArrayRef[Str]) ($dirs) {
   state $c = compile(ArrayRef);
   $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
@@ -75,7 +76,7 @@ my sub download_file ( $ua, $thread, $link ) {
   close $fh;
 }
 
-my sub fetch_b_thread ( $obj, $server ) {
+my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
   state $c = compile(HashRef, Str);
   $c->(@_);
   my ( $board, $thread ) = $obj->@{qw<board thread>};
@@ -89,7 +90,7 @@ my sub fetch_b_thread ( $obj, $server ) {
   }
 }
 
-my sub uri_base_name ($url) {
+my sub uri_base_name :ReturnType(Str) ($url) {
   state $c = compile(Str);
   $c->(@_);
   my $uri  = URI->new($url);
@@ -97,20 +98,20 @@ my sub uri_base_name ($url) {
   $segs[$#segs];
 }
 
-my sub find_non_existent_images ( $thread, $image_links ) {
+my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $image_links ) {
   state $c = compile(Thread, ArrayRef[Str]);
   $c->(@_);
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 
-my sub find_b_server ($obj) {
+my sub find_b_server :ReturnType(Str) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   $obj->{'board'} = 'b';
   first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
 }
 
-my sub scrape_image_list ($obj) {
+my sub scrape_image_list :ReturnType(Maybe[ArrayRef]) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   my ( $mech, $server, $board, $thread ) = $obj->@{qw<mech server board thread>};
@@ -127,7 +128,7 @@ my sub scrape_image_list ($obj) {
 
 }
 
-my sub select_server ($obj) {
+my sub select_server :ReturnType(Str) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   my $board = $obj->{'board'};

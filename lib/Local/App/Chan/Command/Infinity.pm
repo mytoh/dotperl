@@ -30,6 +30,7 @@ use File::Basename::Extra qw<basename>;
 use Type::Params qw<compile>;
 use Types::Standard qw<-types slurpy>;
 use Local::Chan::Types qw<Board Thread>;
+use Return::Type;
 use IO::Handle;
 use DDP;
 no autovivification;
@@ -38,23 +39,23 @@ const my $HOST => '8ch.net';
 const my $BASE_URL => "https://${HOST}";
 const my $BASE_MEDIA_URL => "https://media.${HOST}";
 
-my sub get_directories () {
+my sub get_directories :ReturnType(ArrayRef) () {
   my @files = path('.')->children;
   [ map { $_->stringify } grep { $_->is_dir } @files ];
 }
 
-my sub is_number ($x) {
+my sub is_number :ReturnType(Bool) ($x) {
   state $re = qr{\A\d+\z};
   $x =~ $re;
 }
 
-my sub thread_directories ($dirs) {
+my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   state $c = compile(ArrayRef);
   $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub make_url($base, @segments) {
+my sub make_url :ReturnType(Object) ($base, @segments) {
   state $c = compile(Str, slurpy ArrayRef[Str]);
   $c->(@_);
   my $url = URI->new($base);
@@ -62,7 +63,7 @@ my sub make_url($base, @segments) {
   $url;
 }
 
-my sub find_non_existent_images ( $thread, $uris) {
+my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $uris) {
   state $c = compile(Thread, ArrayRef[Object]);
   $c->(@_);
   [ grep { 
@@ -71,7 +72,7 @@ my sub find_non_existent_images ( $thread, $uris) {
     $uris->@* ];
 }
 
-my sub fetch_thread_data ( $mech, $board, $thread ) {
+my sub fetch_thread_data :ReturnType(Maybe[ArrayRef]) ( $mech, $board, $thread ) {
   state $c = compile(Object, Board, Thread);
   $c->(@_);
   my $url = make_url($BASE_URL, $board, 'res', "${thread}.html" );
@@ -92,7 +93,6 @@ my sub download_file ( $ua, $thread, $uri) {
   state $c = compile(Object, Thread, Object);
   $c->(@_);
   my $output_file = catfile( $thread, basename($uri->url_abs->path));
-
   my $fh = path($output_file)->openw_raw;
   $fh->autoflush;
   $ua->request(
