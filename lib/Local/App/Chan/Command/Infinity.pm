@@ -32,7 +32,6 @@ use Types::Standard qw<-types slurpy>;
 use Local::Chan::Types qw<Board Thread>;
 use Return::Type;
 use IO::Handle;
-use DDP;
 no autovivification;
 
 const my $HOST => '8ch.net';

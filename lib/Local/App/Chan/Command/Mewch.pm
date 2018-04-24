@@ -29,7 +29,6 @@ use Type::Params qw<compile>;
 use Types::Standard -types;
 use Local::Chan::Types qw<Board Thread>;
 use Return::Type;
-use DDP;
 no autovivification;
 
 const my $BASE_URL => 'https://mewch.net';

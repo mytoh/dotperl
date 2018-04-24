@@ -17,7 +17,6 @@ use File::Basename::Extra qw<basename>;
 use Path::Tiny qw<path>;
 use Term::ANSIColor qw<colored>;
 use URI;
-use DDP;
 use List::AllUtils qw<first uniq any>;
 use Const::Fast qw<const>;
 use Furl::HTTP;
