@@ -1,4 +1,5 @@
-package Local::Chan::Types;
+
+package Local::Booru::Types;
 
 use Type::Library 
   -base,
@@ -9,7 +10,8 @@ use Type::Library
                  MechLink 
                  Mech 
                  Furl 
-                 FurlHttp>;
+                 FurlHttp
+                HttpResponse>;
 use Type::Utils -all;
 use Types::Standard -types, 'slurpy';
 use Types::URI -all;
@@ -39,7 +41,7 @@ class_type Furl;
 
 class_type FurlHttp, {class => 'Furl::HTTP'};
 
-
+class_type HttpResponse, { class => 'HTTP::Response' };
  
 # declare "AllCaps",
 #    as "Str",

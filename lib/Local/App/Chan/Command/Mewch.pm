@@ -27,7 +27,7 @@ use File::Basename::Extra qw<basename>;
 use List::AllUtils qw<uniq>;
 use Type::Params qw<compile>;
 use Types::Standard -types;
-use Local::Chan::Types qw<Board Thread>;
+use Local::Chan::Types -types;
 use Return::Type;
 no autovivification;
 
@@ -47,7 +47,7 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub parse_images :ReturnType(ArrayRef) ( $json ) {
+my sub parse_images :ReturnType(ArrayRef[Image]) ( $json ) {
   state $c = compile(HashRef);
   $c->(@_);
   my @first_images = map {$_->{'path'} } $json->{'files'}->@*;
@@ -61,14 +61,14 @@ my sub parse_images :ReturnType(ArrayRef) ( $json ) {
   \@image_objects;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $image_data ) {
-  state $c = compile(Thread, ArrayRef);
+my sub find_non_existent_images :ReturnType(ArrayRef[Image]) ( $thread, $image ) {
+  state $c = compile(Thread, ArrayRef[Image]);
   $c->(@_);
-  [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image_data->@* ];
+  [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+  state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $url = URI->new("https://mewch.net");
   $url->path_segments( $board, 'res', "${thread}.json" );
@@ -83,24 +83,22 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
   }
 }
 
-my sub download_file ( $ua, $thread, $image_data ) {
-  state $c = compile(Object, Thread, HashRef);
+my sub download_file ( $ua, $thread, $image) {
+  state $c = compile(FurlHttp, Thread, Image);
   $c->(@_);
-  my $output_file = catfile( $thread, $image_data->{'filename'} );
+  my $output_file = catfile( $thread, $image->{'filename'} );
 
   my $fh = path($output_file)->openw_raw;
 
   $ua->request(
     method     => 'GET',
-    url        => $image_data->{url},
+    url        => $image->{url},
     write_file => $fh
    );
-
-  close $fh;
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+  state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
   if ($thread_data) {
@@ -121,7 +119,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(Object, Board);
+  state $c = compile(FurlHttp, Board);
   $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {

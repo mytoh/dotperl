@@ -28,10 +28,12 @@ use URI::Split qw<uri_split>;
 use List::UtilsBy qw<uniq_by>;
 use File::Basename::Extra qw<basename>;
 use Type::Params qw<compile>;
-use Types::Standard qw<-types slurpy>;
-use Local::Chan::Types qw<Board Thread>;
+use Types::Standard -types, 'slurpy';
+use Types::URI -all;
+use Local::Chan::Types -types;
 use Return::Type;
 use IO::Handle;
+use Data::Dumper;
 no autovivification;
 
 const my $HOST => '8ch.net';
@@ -54,7 +56,7 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub make_url :ReturnType(Object) ($base, @segments) {
+my sub make_url :ReturnType(Uri) ($base, @segments) {
   state $c = compile(Str, slurpy ArrayRef[Str]);
   $c->(@_);
   my $url = URI->new($base);
@@ -62,8 +64,8 @@ my sub make_url :ReturnType(Object) ($base, @segments) {
   $url;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $uris) {
-  state $c = compile(Thread, ArrayRef[Object]);
+my sub find_non_existent_images :ReturnType(ArrayRef[MechLink]) ( $thread, $uris) {
+  state $c = compile(Thread, ArrayRef[MechLink]);
   $c->(@_);
   [ grep { 
     !-f catfile( $thread, basename($_->url_abs->path)) ;
@@ -71,8 +73,8 @@ my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $uris) {
     $uris->@* ];
 }
 
-my sub fetch_thread_data :ReturnType(Maybe[ArrayRef]) ( $mech, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+my sub fetch_thread_data :ReturnType(Maybe[ArrayRef[MechLink]]) ( $mech, $board, $thread ) {
+  state $c = compile(Mech, Board, Thread);
   $c->(@_);
   my $url = make_url($BASE_URL, $board, 'res', "${thread}.html" );
   $mech->agent_alias('Windows Mozilla');
@@ -89,7 +91,7 @@ my sub fetch_thread_data :ReturnType(Maybe[ArrayRef]) ( $mech, $board, $thread )
 }
 
 my sub download_file ( $ua, $thread, $uri) {
-  state $c = compile(Object, Thread, Object);
+  state $c = compile(FurlHttp, Thread, MechLink);
   $c->(@_);
   my $output_file = catfile( $thread, basename($uri->url_abs->path));
   my $fh = path($output_file)->openw_raw;
@@ -99,12 +101,10 @@ my sub download_file ( $ua, $thread, $uri) {
     url        => $uri->url_abs->as_string,
     write_file => $fh
    );
-
-  close $fh;
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+  state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $mech = WWW::Mechanize->new();
   my $uris = fetch_thread_data( $mech, $board, $thread );
@@ -124,7 +124,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(Object, Board);
+  state $c = compile(FurlHttp, Board);
   $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {

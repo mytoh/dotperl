@@ -46,3 +46,4 @@ requires 'Unix::PID';
 requires 'Type::Tiny';
 requires 'Type::Tiny::XS';
 requires 'Return::Type';
+requires 'Types::URI';

@@ -21,9 +21,13 @@ use File::Slurper qw<read_text>;
 use Term::ANSIColor qw<colored>;
 use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
-use Types::Standard -types;
-use Local::Chan::Types qw<Board Thread>;
+use Types::Standard -types, 'slurpy';
+use Type::Utils -all;
+use Types::URI -all;
+use Local::Chan::Types -types;
 use Return::Type;
+use Const::Fast;
+use URI;
 no autovivification;
 
 my sub get_directories :ReturnType(ArrayRef) () {
@@ -44,26 +48,26 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub parse_images :ReturnType(ArrayRef) ( $board, $json ) {
+my sub parse_images :ReturnType(ArrayRef[Image]) ( $board, $json ) {
   state $c = compile(Board, HashRef);
   $c->(@_);
   my @images = map {
     my $url = URI->new("https://i.4cdn.org");
     $url->path_segments( $board, $_->{'tim'} . $_->{'ext'} );
-    +{ dest => $_->{tim} . $_->{ext}, url => $url }
+    +{ filename => $_->{'tim'} . $_->{'ext'}, url => $url }
   }
-    grep { exists $_->{filename} } $json->{posts}->@*;
+    grep { exists $_->{'filename'} } $json->{'posts'}->@*;
   \@images;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $image_data ) {
-  state $c = compile(Thread, ArrayRef[HashRef]);
+my sub find_non_existent_images :ReturnType(ArrayRef[Image]) ( $thread, $image ) {
+  state $c = compile(Thread, ArrayRef[Image]);
   $c->(@_);
-  [ grep { !-f catfile( $thread, $_->{dest} ) } $image_data->@* ];
+  [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+  state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $url = URI->new("https://a.4cdn.org");
   $url->path_segments( $board, 'thread', "${thread}.json" );
@@ -78,27 +82,27 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
   }
 }
 
-my sub download_file ( $ua, $thread, $image_data ) {
-  state $c = compile(Object, Thread, HashRef);
+my sub download_file ( $ua, $thread, $image ) {
+  state $c = compile(FurlHttp, Thread, Image);
   $c->(@_);
-  my $output_file = catfile( $thread, $image_data->{dest} );
+  my $output_file = catfile( $thread, $image->{'filename'} );
 
   my $fh = path($output_file)->openw_raw;
 
   $ua->request(
     method     => 'GET',
-    url        => $image_data->{url},
+    url        => $image->{'url'},
     write_file => $fh
    );
-
-  close $fh;
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(Object, Board, Thread);
+  state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
+
   if ($thread_data) {
+
     say $thread;
     my $images =
       find_non_existent_images( $thread,
@@ -112,11 +116,13 @@ my sub get_single ( $ua, $board, $thread ) {
         . colored( ['blue'], scalar( $images->@* ) )
         . ' files';
     }
+  } else {
+    undef;
   }
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(Object, Board);
+  state $c = compile(FurlHttp, Board);
   $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {

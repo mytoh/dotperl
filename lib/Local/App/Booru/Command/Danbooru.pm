@@ -26,6 +26,7 @@ use LWP::UserAgent;
 use JSON::MaybeUTF8 qw(:v1);
 use Type::Params qw<compile>;
 use Types::Standard -types;
+use Local::Booru::Types -types;
 use Return::Type;
 no autovivification;
 
@@ -40,7 +41,7 @@ my sub format_tags :ReturnType(ArrayRef) ($tags) {
 }
 
 my sub is_get_successed :ReturnType(Bool) ($res) {
-  state $c = compile(Object);
+  state $c = compile(HttpResponse);
   $c->(@_);
   if ( $res->is_success && $res->content eq "[]" ) {
     !!0;
@@ -80,7 +81,7 @@ my sub get_posts :ReturnType(Maybe[HashRef]) ( $page, $tags ) {
 }
 
 my sub download_post ( $ua, $post ) {
-  state $c = compile(Object, HashRef);
+  state $c = compile(FurlHttp, HashRef);
   $c->(@_);
   if ( defined $post->{'large_file_url'} ) {
     my $output_file =
@@ -94,8 +95,6 @@ my sub download_post ( $ua, $post ) {
         url        => $url,
         write_file => $fh
        );
-
-      close $fh;
     }
   }
 }

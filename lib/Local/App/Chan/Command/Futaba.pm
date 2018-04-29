@@ -25,7 +25,7 @@ use Cache::LRU;
 use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
 use Types::Standard -types;
-use Local::Chan::Types qw<Board Thread>;
+use Local::Chan::Types -types;
 use Return::Type;
 
 # use XML::LibXML::jQuery;
@@ -56,14 +56,14 @@ my sub is_number :ReturnType(Bool) ($x) {
   $x =~ $re;
 }
 
-my sub thread_directories :ReturnType(ArrayRef[Str]) ($dirs) {
-  state $c = compile(ArrayRef);
+my sub thread_directories :ReturnType(ArrayRef[Thread]) ($dirs) {
+  state $c = compile(ArrayRef[Thread]);
   $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub download_file ( $ua, $thread, $link ) {
-  state $c = compile(Object, Thread, Str);
+  state $c = compile(FurlHttp, Thread, Str);
   $c->(@_);
   my $output_file = catfile( $thread, basename($link) );
   my $fh = path($output_file)->openw_raw or die $!;
@@ -72,11 +72,10 @@ my sub download_file ( $ua, $thread, $link ) {
     url        => $link,
     write_file => $fh,
    );
-  close $fh;
 }
 
 my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
-  state $c = compile(HashRef, Str);
+  state $c = compile(HashRef, Server);
   $c->(@_);
   my ( $board, $thread ) = $obj->@{qw<board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
@@ -97,20 +96,20 @@ my sub uri_base_name :ReturnType(Str) ($url) {
   $segs[$#segs];
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef) ( $thread, $image_links ) {
+my sub find_non_existent_images :ReturnType(ArrayRef[Str]) ( $thread, $image_links ) {
   state $c = compile(Thread, ArrayRef[Str]);
   $c->(@_);
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 
-my sub find_b_server :ReturnType(Str) ($obj) {
+my sub find_b_server :ReturnType(Server) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   $obj->{'board'} = 'b';
   first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
 }
 
-my sub scrape_image_list :ReturnType(Maybe[ArrayRef]) ($obj) {
+my sub scrape_image_list :ReturnType(Maybe[ArrayRef[MechLink]]) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   my ( $mech, $server, $board, $thread ) = $obj->@{qw<mech server board thread>};
@@ -127,7 +126,7 @@ my sub scrape_image_list :ReturnType(Maybe[ArrayRef]) ($obj) {
 
 }
 
-my sub select_server :ReturnType(Str) ($obj) {
+my sub select_server :ReturnType(Server) ($obj) {
   state $c = compile(HashRef);
   $c->(@_);
   my $board = $obj->{'board'};
