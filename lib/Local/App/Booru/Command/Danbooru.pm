@@ -115,7 +115,7 @@ my sub start_loop ( $page, $tags ) {
   state $c = compile(Num, ArrayRef[Str]);
   $c->(@_);
   my $posts = get_posts( $page, $tags );
-  if ($posts) {
+  if (defined $posts) {
     download_posts($posts);
     __SUB__->( $page + 1, $tags );
   } else {

@@ -101,7 +101,7 @@ my sub get_single ( $ua, $board, $thread ) {
   $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
-  if ($thread_data) {
+  if (defined $thread_data) {
 
     say $thread;
     my $images =

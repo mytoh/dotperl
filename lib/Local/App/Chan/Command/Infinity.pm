@@ -108,7 +108,7 @@ my sub get_single ( $ua, $board, $thread ) {
   $c->(@_);
   my $mech = WWW::Mechanize->new();
   my $uris = fetch_thread_data( $mech, $board, $thread );
-  if ($uris->@*) {
+  if (defined $uris && $uris->@*) {
     say $thread;
     my $images = find_non_existent_images( $thread, $uris);
     if ( $images->@* ) {

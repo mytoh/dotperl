@@ -144,7 +144,7 @@ my sub get_single ($obj) {
   $obj->{'server'} = select_server($obj);
   if ( $obj->{'server'} ) {
     my $image_links = scrape_image_list($obj);
-    if ($image_links) {
+    if (defined $image_links) {
       say $thread;
       my $fetch_list = find_non_existent_images( $thread, $image_links );
       if ( $fetch_list->@* ) {

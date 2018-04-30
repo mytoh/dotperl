@@ -105,7 +105,7 @@ my sub get_single ( $ua, $board, $thread ) {
   state $c = compile(FurlHttp, Board, Thread);
   $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
-  if ($thread_data) {
+  if (defined $thread_data) {
     say $thread;
     my $images =
       find_non_existent_images( $thread,
