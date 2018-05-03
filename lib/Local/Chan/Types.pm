@@ -5,7 +5,9 @@ use Type::Library
   -declare => qw<Board 
                  Thread 
                  Server 
+                 File
                  Image
+                 Video
                  MechLink 
                  Mech 
                  Furl 
@@ -26,10 +28,14 @@ declare Board,
 declare Server, 
   as Str;
 
-declare Image,
+declare File,
   as Dict[filename => Str,
           url => Uri,
           slurpy Any];
+declare Image,
+  as File;
+declare Video,
+  as File;
 
 class_type MechLink, {class => 'WWW::Mechanize::Link' };
 

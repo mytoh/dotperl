@@ -65,8 +65,8 @@ my sub parse_images :ReturnType(ArrayRef[HashRef]) ( $board, $json ) {
   \@image_objects;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef[Image]) ( $thread, $image_data ) {
-  state $c = compile(Thread, ArrayRef[Image]);
+my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image_data ) {
+  state $c = compile(Thread, ArrayRef[File]);
   $c->(@_);
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image_data->@* ];
 }
@@ -88,7 +88,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $image_data ) {
-  state $c = compile(FurlHttp, Thread, Image);
+  state $c = compile(FurlHttp, Thread, File);
   $c->(@_);
   my $output_file = catfile( $thread, $image_data->{'filename'} );
 

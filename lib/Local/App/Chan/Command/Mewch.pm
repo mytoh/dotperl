@@ -47,7 +47,7 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub parse_images :ReturnType(ArrayRef[Image]) ( $json ) {
+my sub parse_images :ReturnType(ArrayRef[File]) ( $json ) {
   state $c = compile(HashRef);
   $c->(@_);
   my @first_images = map {$_->{'path'} } $json->{'files'}->@*;
@@ -61,8 +61,8 @@ my sub parse_images :ReturnType(ArrayRef[Image]) ( $json ) {
   \@image_objects;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef[Image]) ( $thread, $image ) {
-  state $c = compile(Thread, ArrayRef[Image]);
+my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image ) {
+  state $c = compile(Thread, ArrayRef[File]);
   $c->(@_);
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
 }
@@ -84,7 +84,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $image) {
-  state $c = compile(FurlHttp, Thread, Image);
+  state $c = compile(FurlHttp, Thread, File);
   $c->(@_);
   my $output_file = catfile( $thread, $image->{'filename'} );
 
