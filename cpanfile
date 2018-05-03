@@ -27,6 +27,8 @@ requires 'List::AllUtils';
 requires 'List::Flatten::XS';
 requires 'Net::DNS::Lite';
 requires 'Path::Tiny';
+requires 'File::Copy::Recursive::Reduced'; # for FindBin::libs
+requires 'FindBin::libs';
 requires 'Project::Libs';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
@@ -47,3 +49,5 @@ requires 'Type::Tiny';
 requires 'Type::Tiny::XS';
 requires 'Return::Type';
 requires 'Types::URI';
+requires 'IO::Socket::PortState';
+requires 'Acme::LookOfDisapproval';
