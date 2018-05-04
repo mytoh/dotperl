@@ -57,14 +57,12 @@ my sub is_number :ReturnType(Bool) ($x) {
 }
 
 my sub thread_directories :ReturnType(ArrayRef[Thread]) ($dirs) {
-  state $c = compile(ArrayRef[Thread]);
-  $c->(@_);
+  state $c = compile(ArrayRef[Thread]); $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub download_file ( $ua, $thread, $link ) {
-  state $c = compile(FurlHttp, Thread, Str);
-  $c->(@_);
+  state $c = compile(FurlHttp, Thread, Str); $c->(@_);
   my $output_file = catfile( $thread, basename($link) );
   my $fh = path($output_file)->openw_raw or die $!;
   $ua->request(
@@ -75,8 +73,7 @@ my sub download_file ( $ua, $thread, $link ) {
 }
 
 my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
-  state $c = compile(HashRef, Server);
-  $c->(@_);
+  state $c = compile(HashRef, Server); $c->(@_);
   my ( $board, $thread ) = $obj->@{qw<board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
   my ( $minor_version, $status, $message, $headers, $content ) =
@@ -89,29 +86,25 @@ my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
 }
 
 my sub uri_base_name :ReturnType(Str) ($url) {
-  state $c = compile(Str);
-  $c->(@_);
+  state $c = compile(Str); $c->(@_);
   my $uri  = URI->new($url);
   my @segs = $uri->path_segments;
   $segs[$#segs];
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[Str]) ( $thread, $image_links ) {
-  state $c = compile(Thread, ArrayRef[Str]);
-  $c->(@_);
+  state $c = compile(Thread, ArrayRef[Str]); $c->(@_);
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 
 my sub find_b_server :ReturnType(Server) ($obj) {
-  state $c = compile(HashRef);
-  $c->(@_);
+  state $c = compile(HashRef); $c->(@_);
   $obj->{'board'} = 'b';
   first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
 }
 
 my sub scrape_image_list :ReturnType(Maybe[ArrayRef[MechLink]]) ($obj) {
-  state $c = compile(HashRef);
-  $c->(@_);
+  state $c = compile(HashRef); $c->(@_);
   my ( $mech, $server, $board, $thread ) = $obj->@{qw<mech server board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
   $mech->get($url);
@@ -127,8 +120,7 @@ my sub scrape_image_list :ReturnType(Maybe[ArrayRef[MechLink]]) ($obj) {
 }
 
 my sub select_server :ReturnType(Server) ($obj) {
-  state $c = compile(HashRef);
-  $c->(@_);
+  state $c = compile(HashRef); $c->(@_);
   my $board = $obj->{'board'};
   if ( $board eq 'b' ) {
     find_b_server($obj);
@@ -138,8 +130,7 @@ my sub select_server :ReturnType(Server) ($obj) {
 }
 
 my sub get_single ($obj) {
-  state $c = compile(HashRef);
-  $c->(@_);
+  state $c = compile(HashRef); $c->(@_);
   my ( $ua, $thread, $board ) = $obj->@{qw<ua thread board>};
   $obj->{'server'} = select_server($obj);
   if ( $obj->{'server'} ) {
@@ -162,8 +153,7 @@ my sub get_single ($obj) {
 }
 
 my sub get_all ($obj) {
-  state $c = compile(HashRef);
-  $c->(@_);
+  state $c = compile(HashRef); $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( $dirs->@* ) {
     $obj->{'thread'} = $thread;

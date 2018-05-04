@@ -46,14 +46,12 @@ my sub is_number :ReturnType(Bool) ($x) {
 }
 
 my sub thread_directories :ReturnType(ArrayRef[Str]) ($dirs) {
-  state $c = compile(ArrayRef);
-  $c->(@_);
+  state $c = compile(ArrayRef); $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub parse_images :ReturnType(ArrayRef[HashRef]) ( $board, $json ) {
-  state $c = compile(Board, HashRef);
-  $c->(@_);
+  state $c = compile(Board, HashRef); $c->(@_);
   my @first_images = map {$_->{'path'} } $json->{'files'}->@*;
   my @other_files = map { $_->{'files'}} $json->{'posts'}->@*;
   my @other_images = map { $_->{'path'} } flatten(\@other_files);
@@ -66,14 +64,12 @@ my sub parse_images :ReturnType(ArrayRef[HashRef]) ( $board, $json ) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image_data ) {
-  state $c = compile(Thread, ArrayRef[File]);
-  $c->(@_);
+  state $c = compile(Thread, ArrayRef[File]); $c->(@_);
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image_data->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, Board, Thread);
-  $c->(@_);
+  state $c = compile(FurlHttp, Board, Thread); $c->(@_);
   my $url = URI->new("https://endchan.xyz");
   $url->path_segments( $board, 'res', "${thread}.json" );
 
@@ -88,8 +84,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $image_data ) {
-  state $c = compile(FurlHttp, Thread, File);
-  $c->(@_);
+  state $c = compile(FurlHttp, Thread, File); $c->(@_);
   my $output_file = catfile( $thread, $image_data->{'filename'} );
 
   my $fh = path($output_file)->openw_raw;
@@ -102,8 +97,7 @@ my sub download_file ( $ua, $thread, $image_data ) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, Board, Thread);
-  $c->(@_);
+  state $c = compile(FurlHttp, Board, Thread); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
   if (defined $thread_data) {
     say $thread;
@@ -123,8 +117,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(FurlHttp, Board);
-  $c->(@_);
+  state $c = compile(FurlHttp, Board); $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -132,8 +125,7 @@ my sub get_all ( $ua, $board ) {
 }
 
 my sub forever : prototype(&;$) ( $sub, $sleep ) {
-  state $c = compile(CodeRef, Num);
-  $c->(@_);
+  state $c = compile(CodeRef, Num); $c->(@_);
   while (1) {
     $sub->();
     sleep $sleep;
