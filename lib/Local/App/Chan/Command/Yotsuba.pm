@@ -57,9 +57,9 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
   \@images;
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image ) {
+my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $images ) {
   state $c = compile(Thread, ArrayRef[File]); $c->(@_);
-  [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
+  [ grep { !-f catfile( $thread, $_->{'filename'} ) } $images->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
