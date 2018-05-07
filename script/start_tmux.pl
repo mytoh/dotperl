@@ -9,12 +9,18 @@ use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;
 use re 'strict';
 use IPC::System::Simple qw<systemx>;
+  use DDP;
 
 my sub tmux_command ($command, @args) {
   systemx('tmux', $command, @args);
 }
 
-my sub tmux_new_session (@args) {
+my sub tmux_new_session (%options) {
+  my @args = (exists $options{'session'} ? ('-s', $options{'session'}) : (),
+              exists $options{'window'} ? ('-n', $options{'window'}) : (),
+              exists $options{'attach'} ? () : '-d',
+              exists $options{'command'} ? $options{'command'}->@* : (),
+             );
   tmux_command('new-session', @args);
 }
 
@@ -27,16 +33,21 @@ my sub tmux_set_window_option (@args) {
 }
 
 my sub session_main () {
-  tmux_new_session(qw<-s main -n main -d>);
+  tmux_new_session(session => 'main',
+                   window  => 'main',);
 }
 
 my sub session_daemon () {
-  tmux_new_session(qw<-s daemon -n yotsuba -d yotsuba_dl.pl>);
+  tmux_new_session(session => 'daemon',
+                   window  => 'yotsuba',
+                   command => [qw<yotsuba_dl.pl>]);
   tmux_set_window_option(qw<-q -t daemon:yotsuba remain-on-exit on>);
 }
 
 my sub session_stats () {
-  tmux_new_session(qw<-s stats -n top -d top>);
+  tmux_new_session(session => 'stats',
+                   window  => 'top',
+                   command => [qw<top>]);
   tmux_set_window_option(qw<-q -t stats:top remain-on-exit on>);
   tmux_split_window(qw<-h -t stats:top.0 -d systat -ifstat>);
   tmux_split_window(qw<-v -t stats:top.1 -d systat -ip>);
@@ -53,4 +64,4 @@ my sub main () {
   attach_main();
 }
 
-main();
+# main();
