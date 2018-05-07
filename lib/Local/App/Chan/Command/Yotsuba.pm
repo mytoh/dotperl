@@ -24,10 +24,11 @@ use Type::Params qw<compile>;
 use Types::Standard -types, 'slurpy';
 use Type::Utils -all;
 use Types::URI -all;
-use Local::Chan::Types -types;
 use Return::Type;
 use Const::Fast;
 use URI;
+use Local::Chan::Types -types;
+use Local::Chan::Util qw<download_file>;
 no autovivification;
 
 my sub get_directories :ReturnType(ArrayRef) () {
@@ -50,8 +51,10 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
   state $c = compile(Board, HashRef); $c->(@_);
   my @images = map {
     my $url = URI->new("https://i.4cdn.org");
-    $url->path_segments( $board, $_->{'tim'} . $_->{'ext'} );
-    +{ filename => $_->{'tim'} . $_->{'ext'}, url => $url }
+    my $filename = $_->{'tim'} . $_->{'ext'};
+    $url->path_segments( $board, $filename);
+    +{ filename => $filename,
+       url => $url }
   }
     grep { exists $_->{'filename'} } $json->{'posts'}->@*;
   \@images;
@@ -77,19 +80,6 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
   }
 }
 
-my sub download_file ( $ua, $thread, $image ) {
-  state $c = compile(FurlHttp, Thread, File); $c->(@_);
-  my $output_file = catfile( $thread, $image->{'filename'} );
-
-  my $fh = path($output_file)->openw_raw;
-
-  $ua->request(
-    method     => 'GET',
-    url        => $image->{'url'},
-    write_file => $fh
-   );
-}
-
 my sub get_single ( $ua, $board, $thread ) {
   state $c = compile(FurlHttp, Board, Thread); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
@@ -103,7 +93,9 @@ my sub get_single ( $ua, $board, $thread ) {
     if ( $images->@* ) {
       say 'Downloading ' . $board . ': ' . $thread;
       foreach my $image ( $images->@* ) {
-        download_file( $ua, $thread, $image );
+        my $file = catfile( $thread, $image->{'filename'} );
+        my $url = $image->{'url'};
+        download_file( $ua, $url, $file );
       }
       say 'Downleaded '
         . colored( ['blue'], scalar( $images->@* ) )
