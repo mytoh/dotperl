@@ -9,7 +9,6 @@ use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict>;
 use re 'strict';
 use IPC::System::Simple qw<systemx>;
-  use DDP;
 
 my sub tmux_command ($command, @args) {
   systemx('tmux', $command, @args);
@@ -64,4 +63,4 @@ my sub main () {
   attach_main();
 }
 
-# main();
+main();
