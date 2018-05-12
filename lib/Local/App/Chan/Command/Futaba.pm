@@ -18,6 +18,7 @@ use Path::Tiny qw<path>;
 use Term::ANSIColor qw<colored>;
 use URI;
 use List::AllUtils qw<first uniq any>;
+use List::UtilsBy qw<uniq_by>;
 use Const::Fast qw<const>;
 use Furl::HTTP;
 use Net::DNS::Lite;
@@ -25,8 +26,11 @@ use Cache::LRU;
 use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
 use Types::Standard -types;
+use Types::URI -types;
 use Local::Chan::Types -types;
+use Local::Chan::Util qw<download_file>;
 use Return::Type;
+use DDP;
 
 # use XML::LibXML::jQuery;
 use WWW::Mechanize;
@@ -61,17 +65,6 @@ my sub thread_directories :ReturnType(ArrayRef[Thread]) ($dirs) {
   [ grep { is_number($_) } $dirs->@* ]
 }
 
-my sub download_file ( $ua, $thread, $link ) {
-  state $c = compile(FurlHttp, Thread, Str); $c->(@_);
-  my $output_file = catfile( $thread, basename($link) );
-  my $fh = path($output_file)->openw_raw or die $!;
-  $ua->request(
-    method     => 'GET',
-    url        => $link,
-    write_file => $fh,
-   );
-}
-
 my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
   state $c = compile(HashRef, Server); $c->(@_);
   my ( $board, $thread ) = $obj->@{qw<board thread>};
@@ -85,15 +78,14 @@ my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
   }
 }
 
-my sub uri_base_name :ReturnType(Str) ($url) {
-  state $c = compile(Str); $c->(@_);
-  my $uri  = URI->new($url);
+my sub uri_base_name :ReturnType(Str) ($uri) {
+  state $c = compile(Uri); $c->(@_);
   my @segs = $uri->path_segments;
   $segs[$#segs];
 }
 
-my sub find_non_existent_images :ReturnType(ArrayRef[Str]) ( $thread, $image_links ) {
-  state $c = compile(Thread, ArrayRef[Str]); $c->(@_);
+my sub find_non_existent_images :ReturnType(ArrayRef[Uri]) ( $thread, $image_links ) {
+  state $c = compile(Thread, ArrayRef[Uri]); $c->(@_);
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 
@@ -103,16 +95,16 @@ my sub find_b_server :ReturnType(Server) ($obj) {
   first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
 }
 
-my sub scrape_image_list :ReturnType(Maybe[ArrayRef[MechLink]]) ($obj) {
+my sub scrape_image_list :ReturnType(Maybe[ArrayRef[Uri]]) ($obj) {
   state $c = compile(HashRef); $c->(@_);
   my ( $mech, $server, $board, $thread ) = $obj->@{qw<mech server board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
   $mech->get($url);
   if ( $mech->success ) {
-    my @uris =
+    my @links =
       $mech->find_all_links( tag => "a", url_regex => qr(${board}/src) );
-    my @images = uniq map { $_->url_abs->as_string } @uris;
-    \@images;
+    my @uris = map {$_->url_abs } uniq_by { $_->url } @links;
+    \@uris;
   } else {
     undef;
   }
@@ -140,8 +132,9 @@ my sub get_single ($obj) {
       my $fetch_list = find_non_existent_images( $thread, $image_links );
       if ( $fetch_list->@* ) {
         say 'Downloading ' . $board . ': ' . $thread;
-        foreach my $image ( $fetch_list->@* ) {
-          download_file( $ua, $thread, $image );
+        foreach my $uri ( $fetch_list->@* ) {
+          my $filename = catfile( $thread, uri_base_name($uri) );
+          download_file( $ua, $uri, $filename);
         }
         say 'Downloaded '
           . colored( ['blue'], scalar( $fetch_list->@* ) )
