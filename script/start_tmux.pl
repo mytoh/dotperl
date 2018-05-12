@@ -52,6 +52,11 @@ my sub session_stats () {
   tmux_split_window(qw<-v -t stats:top.1 -d systat -ip>);
 }
 
+my sub session_remote () {
+  tmux_new_session(session => 'remote',
+                   window  => 'remote',);
+}
+
 my sub attach_main () {
   tmux_command(qw<-2 attach -t main>);
 }
@@ -60,6 +65,7 @@ my sub main () {
   session_main();
   session_daemon();
   session_stats();
+  session_remote();
   attach_main();
 }
 
