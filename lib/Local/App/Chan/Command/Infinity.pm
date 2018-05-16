@@ -31,6 +31,7 @@ use Type::Params qw<compile>;
 use Types::Standard -types, 'slurpy';
 use Types::URI -all;
 use Local::Chan::Types -types;
+use Local::Chan::Util qw<forever>;
 use Return::Type;
 use IO::Handle;
 use Data::Dumper;
@@ -122,14 +123,6 @@ my sub get_all ( $ua, $board ) {
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
-  }
-}
-
-my sub forever : prototype(&;$) ( $sub, $sleep ) {
-  state $c = compile(CodeRef, Num); $c->(@_);
-  while (1) {
-    $sub->();
-    sleep $sleep;
   }
 }
 

@@ -28,7 +28,7 @@ use Return::Type;
 use Const::Fast;
 use URI;
 use Local::Chan::Types -types;
-use Local::Chan::Util qw<download_file>;
+use Local::Chan::Util qw<download_file forever>;
 no autovivification;
 
 my sub get_directories :ReturnType(ArrayRef) () {
@@ -111,14 +111,6 @@ my sub get_all ( $ua, $board ) {
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
-  }
-}
-
-my sub forever : prototype(&;$) ( $sub, $sleep ) {
-  state $c = compile(CodeRef, Num); $c->(@_);
-  while (1) {
-    $sub->();
-    sleep $sleep;
   }
 }
 

@@ -19,7 +19,8 @@ use Local::Chan::Types -types;
 use Return::Type;
 no autovivification;
 
-use Exporter::Shiny qw<download_file>;
+use Exporter::Shiny qw<download_file
+                       forever>;
 
 sub download_file ( $ua, $url, $file ) {
   state $c = compile(FurlHttp, Uri, Str); $c->(@_);
@@ -31,6 +32,14 @@ sub download_file ( $ua, $url, $file ) {
     url        => $url,
     write_file => $fh
    );
+}
+
+sub forever : prototype(&;$) ( $sub, $sleep ) {
+  state $c = compile(CodeRef, Num); $c->(@_);
+  while (1) {
+    $sub->();
+    sleep $sleep;
+  }
 }
 
 !!1;

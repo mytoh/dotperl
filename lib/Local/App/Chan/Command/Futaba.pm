@@ -28,7 +28,7 @@ use Type::Params qw<compile>;
 use Types::Standard -types;
 use Types::URI -types;
 use Local::Chan::Types -types;
-use Local::Chan::Util qw<download_file>;
+use Local::Chan::Util qw<download_file forever>;
 use Return::Type;
 use DDP;
 
@@ -151,13 +151,6 @@ my sub get_all ($obj) {
   foreach my $thread ( $dirs->@* ) {
     $obj->{'thread'} = $thread;
     get_single($obj);
-  }
-}
-
-my sub forever : prototype(&;$) ( $sub, $sleep ) {
-  while (1) {
-    $sub->();
-    sleep $sleep;
   }
 }
 

@@ -30,6 +30,7 @@ use Types::Standard -types, 'slurpy';
 use Types::URI -types;
 use Type::Utils -all;
 use Local::Chan::Types -types;
+use Local::Chan::Util qw<forever>;
 use Return::Type;
 no autovivification;
 
@@ -121,14 +122,6 @@ my sub get_all ( $ua, $board ) {
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
-  }
-}
-
-my sub forever : prototype(&;$) ( $sub, $sleep ) {
-  state $c = compile(CodeRef, Num); $c->(@_);
-  while (1) {
-    $sub->();
-    sleep $sleep;
   }
 }
 
