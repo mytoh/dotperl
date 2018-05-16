@@ -60,8 +60,8 @@ my sub is_number :ReturnType(Bool) ($x) {
   $x =~ $re;
 }
 
-my sub thread_directories :ReturnType(ArrayRef[Thread]) ($dirs) {
-  state $c = compile(ArrayRef[Thread]); $c->(@_);
+my sub thread_directories :ReturnType(ArrayRef[ThreadId]) ($dirs) {
+  state $c = compile(ArrayRef[ThreadId]); $c->(@_);
   [ grep { is_number($_) } $dirs->@* ]
 }
 
@@ -85,7 +85,7 @@ my sub uri_base_name :ReturnType(Str) ($uri) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[Uri]) ( $thread, $image_links ) {
-  state $c = compile(Thread, ArrayRef[Uri]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[Uri]); $c->(@_);
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 

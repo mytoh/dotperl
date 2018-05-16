@@ -61,12 +61,12 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $json ) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image ) {
-  state $c = compile(Thread, ArrayRef[File]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[File]); $c->(@_);
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, Board, Thread); $c->(@_);
+  state $c = compile(FurlHttp, Board, ThreadId); $c->(@_);
   my $url = URI->new("https://mewch.net");
   $url->path_segments( $board, 'res', "${thread}.json" );
 
@@ -81,7 +81,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $image) {
-  state $c = compile(FurlHttp, Thread, File); $c->(@_);
+  state $c = compile(FurlHttp, ThreadId, File); $c->(@_);
   my $output_file = catfile( $thread, $image->{'filename'} );
 
   my $fh = path($output_file)->openw_raw;
@@ -94,7 +94,7 @@ my sub download_file ( $ua, $thread, $image) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, Board, Thread); $c->(@_);
+  state $c = compile(FurlHttp, Board, ThreadId); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
   if (defined $thread_data) {
     say $thread;

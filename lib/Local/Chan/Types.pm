@@ -2,8 +2,8 @@ package Local::Chan::Types;
 
 use Type::Library
   -base,
-  -declare => qw<Board
-                 Thread
+  -declare => qw<BoardName
+                 ThreadId
                  Server
                  File
                  Image
@@ -15,14 +15,15 @@ use Type::Library
 use Type::Utils -all;
 use Types::Standard -types, 'slurpy';
 use Types::URI -all;
+use Types::Common::Numeric -types;
 use v5.28;
 use strict;
 use warnings;
 
-declare Thread,
-  as Str;
+declare ThreadId,
+  as PositiveInt;
 
-declare Board,
+declare BoardName,
   as Str;
 
 declare Server,
