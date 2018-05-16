@@ -1,16 +1,16 @@
 package Local::Chan::Types;
 
-use Type::Library 
+use Type::Library
   -base,
-  -declare => qw<Board 
-                 Thread 
-                 Server 
+  -declare => qw<Board
+                 Thread
+                 Server
                  File
                  Image
                  Video
-                 MechLink 
-                 Mech 
-                 Furl 
+                 MechLink
+                 Mech
+                 Furl
                  FurlHttp>;
 use Type::Utils -all;
 use Types::Standard -types, 'slurpy';
@@ -18,14 +18,14 @@ use Types::URI -all;
 use v5.28;
 use strict;
 use warnings;
- 
-declare Thread, 
+
+declare Thread,
   as Str;
 
-declare Board, 
+declare Board,
   as Str;
 
-declare Server, 
+declare Server,
   as Str;
 
 declare File,
@@ -46,12 +46,12 @@ class_type Furl;
 class_type FurlHttp, {class => 'Furl::HTTP'};
 
 
- 
+
 # declare "AllCaps",
 #    as "Str",
 #    where { uc($_) eq $_ },
 #    inline_as { my $varname = $_[1]; "uc($varname) eq $varname" };
- 
+
 # coerce "AllCaps",
 #    from "Str", via { uc($_) };
 
