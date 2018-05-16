@@ -51,3 +51,4 @@ requires 'Return::Type';
 requires 'Types::URI';
 requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
+requires 'Proc::Daemon';
