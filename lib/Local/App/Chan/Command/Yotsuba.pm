@@ -80,12 +80,21 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
   }
 }
 
+my sub is_thread_archived ($thread_data) {
+  state $c = compile(HashRef); $c->(@_);
+
+  if ($thread_data->{'posts'}[0]{'archived'}) {
+    !!1;
+  } else {
+    !!0;
+  }
+}
+
 my sub get_single ( $ua, $board, $thread ) {
   state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
-  if (defined $thread_data) {
-
+  if (defined $thread_data && ! is_thread_archived($thread_data)) {
     say $thread;
     my $images =
       find_non_existent_images( $thread,
