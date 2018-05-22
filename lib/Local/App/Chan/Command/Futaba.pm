@@ -7,7 +7,7 @@ use strictures 2;
 use autodie ':all';
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
-use experimental qw<signatures re_strict refaliasing declared_refs 
+use experimental qw<signatures re_strict refaliasing declared_refs
                     script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
 use Getopt::Long::Descriptive qw<describe_options>;
@@ -30,10 +30,8 @@ use Types::URI -types;
 use Local::Chan::Types -types;
 use Local::Chan::Util qw<download_file forever>;
 use Return::Type;
+use Mojo::UserAgent;
 use DDP;
-
-# use XML::LibXML::jQuery;
-use WWW::Mechanize;
 no autovivification;
 
 const my $BOARD_SERVERS => +{
@@ -69,9 +67,8 @@ my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
   state $c = compile(HashRef, Server); $c->(@_);
   my ( $board, $thread ) = $obj->@{qw<board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
-  my ( $minor_version, $status, $message, $headers, $content ) =
-    $obj->{'ua'}->request( method => 'GET', url => $url );
-  if ( $status == 200 ) {
+  my $res = $obj->{'mojo'}->get( $url )->result;
+  if ($res->is_success) {
     !!1;
   } else {
     !!0;
@@ -97,18 +94,18 @@ my sub find_b_server :ReturnType(Server) ($obj) {
 
 my sub scrape_image_list :ReturnType(Maybe[ArrayRef[Uri]]) ($obj) {
   state $c = compile(HashRef); $c->(@_);
-  my ( $mech, $server, $board, $thread ) = $obj->@{qw<mech server board thread>};
-  my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
-  $mech->get($url);
-  if ( $mech->success ) {
-    my @links =
-      $mech->find_all_links( tag => "a", url_regex => qr(${board}/src) );
-    my @uris = map {$_->url_abs } uniq_by { $_->url } @links;
+  my ( $mojo, $server, $board, $thread ) = $obj->@{qw<mojo server board thread>};
+  my $base_url = "https://${server}.2chan.net";
+  my $url = "${base_url}/${board}/res/${thread}.htm";
+  my $res = $mojo->get($url)->result;
+  if ( $res->is_success ) {
+    my $query = qq{a[href*="${board}/src"]};
+    my $links = $res->dom->find($query)->map('text')->uniq->to_array;
+    my @uris = map { $_ ? URI->new_abs($_, "${base_url}/${board}/src/") : () } $links->@*;
     \@uris;
   } else {
     undef;
   }
-
 }
 
 my sub select_server :ReturnType(Server) ($obj) {
@@ -160,11 +157,10 @@ my sub get ( $opt, $args ) {
     agent     => 'Mozilla/5.0',
     inet_aton => \&Net::DNS::Lite::inet_aton
    );
-  my $mech = WWW::Mechanize->new();
-  $mech->agent_alias('Windows Mozilla');
+  my $mojo = Mojo::UserAgent->new;
   my $obj = +{
     ua   => $ua,
-    mech => $mech,
+    mojo => $mojo,
   };
   if ( $opt->all ) {
     $obj->{'board'} = $args->[0];
