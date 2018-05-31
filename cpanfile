@@ -52,3 +52,11 @@ requires 'Types::URI';
 requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
 requires 'Proc::Daemon';
+
+{
+  requires 'EV';
+  requires 'Net::DNS::Native';
+  requires 'IO::Socket::Socks';
+  requires 'IO::Socket::SSL';
+  requires 'Mojolicious';
+}
