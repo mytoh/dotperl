@@ -1,31 +1,33 @@
 
 package Local::Booru::Types;
 
-use Type::Library 
+use Type::Library
   -base,
-  -declare => qw<Board 
-                 Thread 
-                 Server 
+  -declare => qw<Board
+                 Thread
+                 Server
                  Image
-                 MechLink 
-                 Mech 
-                 Furl 
+                 MechLink
+                 Mech
+                 Furl
                  FurlHttp
-                HttpResponse>;
+                HttpResponse
+                MojoUserAgent
+                MojoMessageResponse>;
 use Type::Utils -all;
 use Types::Standard -types, 'slurpy';
 use Types::URI -all;
 use v5.28;
 use strict;
 use warnings;
- 
-declare Thread, 
+
+declare Thread,
   as Str;
 
-declare Board, 
+declare Board,
   as Str;
 
-declare Server, 
+declare Server,
   as Str;
 
 declare Image,
@@ -37,17 +39,20 @@ class_type MechLink, {class => 'WWW::Mechanize::Link' };
 
 class_type Mech, {class => 'WWW::Mechanize' };
 
-class_type Furl;
+class_type Furl, {class => 'Furl'};
 
 class_type FurlHttp, {class => 'Furl::HTTP'};
 
 class_type HttpResponse, { class => 'HTTP::Response' };
- 
+
+class_type MojoUserAgent, { class => 'Mojo::UserAgent' };
+class_type MojoMessageResponse, { class => 'Mojo::Message::Response' };
+
 # declare "AllCaps",
 #    as "Str",
 #    where { uc($_) eq $_ },
 #    inline_as { my $varname = $_[1]; "uc($varname) eq $varname" };
- 
+
 # coerce "AllCaps",
 #    from "Str", via { uc($_) };
 
