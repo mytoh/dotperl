@@ -7,12 +7,11 @@ use strictures 2;
 use autodie ':all';
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
-use experimental qw<signatures re_strict refaliasing declared_refs 
+use experimental qw<signatures re_strict refaliasing declared_refs
                     script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
 use File::Glob qw<:bsd_glob>;
 use Path::Tiny qw<path>;
-use Furl::HTTP;
 use Net::DNS::Lite;
 use Cache::LRU;
 use File::Spec::Functions qw<catfile>;
@@ -29,6 +28,7 @@ use Const::Fast;
 use URI;
 use Local::Chan::Types -types;
 use Local::Chan::Util qw<download_file forever>;
+use Mojo::UserAgent;
 no autovivification;
 
 my sub get_directories :ReturnType(ArrayRef) () {
@@ -65,16 +65,24 @@ my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $images )
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $images->@* ];
 }
 
+my sub is_get_successed :ReturnType(Bool) ($res) {
+  state $c = compile(MojoMessageResponse); $c->(@_);
+  if ( $res->is_success && $res->body eq "[]" ) {
+    !!0;
+  } elsif ( $res->is_success ) {
+    !!1;
+  } else {
+    !!0;
+  }
+}
+
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName, ThreadId); $c->(@_);
   my $url = URI->new("https://a.4cdn.org");
   $url->path_segments( $board, 'thread', "${thread}.json" );
-
-  my ( $minor_version, $status, $message, $headers, $content ) =
-    $ua->request( method => 'GET', url => $url->as_string );
-  if ( $status == 200 ) {
-    my $data = decode_json_text($content);
-    $data;
+  my $res = $ua->get($url->as_string)->result;
+  if (is_get_successed($res)) {
+    $res->json;
   } else {
     undef;
   }
@@ -91,20 +99,25 @@ my sub is_thread_archived ($thread_data) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName, ThreadId); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
   if (defined $thread_data && ! is_thread_archived($thread_data)) {
     say $thread;
-    my $images =
-      find_non_existent_images( $thread,
-                                parse_images( $board, $thread_data ) );
+    my $images = find_non_existent_images( $thread,
+                                           parse_images( $board, $thread_data ) );
     if ( $images->@* ) {
       say 'Downloading ' . $board . ': ' . $thread;
       foreach my $image ( $images->@* ) {
         my $file = catfile( $thread, $image->{'filename'} );
-        my $url = $image->{'url'};
-        download_file( $ua, $url, $file );
+        if (! -f $file) {
+          my $url = $image->{'url'};
+          $ua->get($url->as_string)
+            ->result
+            ->content
+            ->asset
+            ->move_to($file)
+          }
       }
       say 'Downleaded '
         . colored( ['blue'], scalar( $images->@* ) )
@@ -116,7 +129,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(FurlHttp, BoardName); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName); $c->(@_);
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -126,10 +139,7 @@ my sub get_all ( $ua, $board ) {
 my sub get ( $opt, $args ) {
   state $c = compile(Object, ArrayRef); $c->(@_);
   my $sleep_second = 60 * 5;
-  my $ua           = Furl::HTTP->new(
-    agent     => 'Mozilla/5.0',
-    inet_aton => \&Net::DNS::Lite::inet_aton
-   );
+  my $ua = Mojo::UserAgent->new;
   if ( $opt->all ) {
     my $board = $args->[0];
     if ( $opt->repeat ) {

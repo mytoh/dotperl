@@ -11,7 +11,9 @@ use Type::Library
                  MechLink
                  Mech
                  Furl
-                 FurlHttp>;
+                 FurlHttp
+                 MojoUserAgent
+                 MojoMessageResponse>;
 use Type::Utils -all;
 use Types::Standard -types, 'slurpy';
 use Types::URI -all;
@@ -46,6 +48,8 @@ class_type Furl;
 
 class_type FurlHttp, {class => 'Furl::HTTP'};
 
+class_type MojoUserAgent, { class => 'Mojo::UserAgent' };
+class_type MojoMessageResponse, { class => 'Mojo::Message::Response' };
 
 
 # declare "AllCaps",
