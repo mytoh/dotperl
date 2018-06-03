@@ -199,8 +199,6 @@ sub usage_desc {
 
 sub execute ($self, $opt, $args) {
 
-  local $Net::DNS::Lite::CACHE = Cache::LRU->new( size => 256, );
-
   get( $opt, $args );
 }
 
