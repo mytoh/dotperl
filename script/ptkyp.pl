@@ -21,12 +21,6 @@ use Mojo::UserAgent;
 use List::AllUtils qw<first_index natatime>;
 use Proc::Daemon;
 
-my $COLUMNS = [qw<Name
-                  Genre
-                  Description
-                  Message
-                  Viewer
-                  Contact>];
 
 my sub replace_chars($text) {
   my $result = $text =~ s/&lt\;/</gr
@@ -87,10 +81,10 @@ my sub create_headers($hlist, $columns) {
   }
 }
 
-my sub add_row($hlist, $row, $channel) {
-  state $column_name_index = first_index { $_ eq 'Name' } $COLUMNS->@*;
-  state $column_genre_index = first_index { $_ eq 'Genre' } $COLUMNS->@*;
-  state $column_description_index = first_index { $_ eq 'Description' } $COLUMNS->@*;
+my sub add_row($hlist, $row, $channel, $columns) {
+  state $column_name_index = first_index { $_ eq 'Name' } $columns->@*;
+  state $column_genre_index = first_index { $_ eq 'Genre' } $columns->@*;
+  state $column_description_index = first_index { $_ eq 'Description' } $columns->@*;
   $hlist->add($row, -data => $channel);
   $hlist->itemCreate($row, $column_name_index,
                      -text => decode_utf8($channel->{'name'}));
@@ -126,20 +120,21 @@ my sub play_channel ($hlist, $logger, $selected_entry) {
 }
 
 
-my sub create_channels_list($hlist, $urls) {
+my sub create_channels_list($hlist, $urls, $columns) {
 
   my $ua = Mojo::UserAgent->new;
   $ua->transactor->name("Mozilla/5.0");
   my $channels = get_channels($ua, $urls);
   foreach my $i (keys $channels->@*) {
     add_row($hlist, $i,
-            $channels->[$i]);
+            $channels->[$i],
+            $columns);
   }
 }
 
-my sub menu_channel_update ($hlist, $urls) {
+my sub menu_channel_update ($hlist, $urls, $columns) {
   $hlist->delete('all');
-  create_channels_list($hlist, $urls);
+  create_channels_list($hlist, $urls, $columns);
 }
 
 my sub make_log_sub ($var) {
@@ -158,6 +153,13 @@ my sub main() {
                  'http://eventyp.xrea.jp/index.txt',
                  'http://peercast.takami98.net/message-yp/index.txt',
                  'http://gerogugu.web.fc2.com/tjyp/index.txt',];
+
+  my $default_columns = [qw<Name
+                            Genre
+                            Description
+                            Message
+                            Viewer
+                            Contact>];
   my $status_text = '';
   my $logger = make_log_sub(\$status_text);
 
@@ -185,7 +187,7 @@ my sub main() {
                                   -foreground => 'white',
                                   -background => 'black',
                                   -header => 'true',
-                                  -columns => scalar($COLUMNS->@*),
+                                  -columns => scalar($default_columns->@*),
                                   -scrollbars => 'osoe',
                                   # -width => 70,
                                   # hide black border around HList when it's active
@@ -220,16 +222,18 @@ my sub main() {
 
   my $menu_file = $mw->Menu(-type => 'normal', -tearoff => 0);
   $menubar->add('cascade', -label => 'File', -menu => $menu_file);
-  $menu_file->add('command', -label => 'Exit', -underline => 0, -command => \&exit );
+  $menu_file->add('command', -label => 'Exit', -underline => 0,
+                  -command => \&exit );
 
   my $menu_channel = $mw->Menu(-type => 'normal', -tearoff => 0);
   $menubar->add('cascade', -label => 'Channel', -menu => $menu_channel);
-  $menu_channel->add('command', -label => 'Update',  -command => [\&menu_channel_update, $hlist, $yp_urls]);
+  $menu_channel->add('command', -label => 'Update',
+                     -command => [\&menu_channel_update, $hlist, $yp_urls, $default_columns]);
   # $menu_file->separator;
 
   # create hlist
-  create_headers($hlist, $COLUMNS);
-  create_channels_list($hlist, $yp_urls);
+  create_headers($hlist, $default_columns);
+  create_channels_list($hlist, $yp_urls, $default_columns);
 
   # statusbar
   my $statusbar = $mw->Label(-borderwidth => 1, -relief => 'sunken', -anchor => 'w',
