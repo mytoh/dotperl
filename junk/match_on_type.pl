@@ -35,11 +35,22 @@ my sub main ($x) {
    );
 }
 
-main({});
-main({a => 1, b => 1});
-main({a => [qw<a b c>]});
-main(0);
-main('');
-main('nsaeuht');
-main([qw<a b c>]);
-main(undef);
+# main({});
+# main({a => 1, b => 1});
+# main({a => [qw<a b c>]});
+# main(0);
+# main('');
+# main('nsaeuht');
+# main([qw<a b c>]);
+# main(undef);
+
+
+# my sub loop ($x) {
+# match_on_type $x => (
+#   Num ,=> sub { say "num"},
+#   ArrayRef ,=> sub {loop(1)},
+# )
+# }
+
+
+# loop([1]);

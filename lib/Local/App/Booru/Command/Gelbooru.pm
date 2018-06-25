@@ -91,8 +91,8 @@ my sub download_post ( $ua, $post ) {
         ->content
         ->asset
         ->move_to($output_file);
+    }
   }
-}
 }
 
 my sub download_posts ($ua, $posts) {
@@ -104,13 +104,13 @@ my sub download_posts ($ua, $posts) {
 
 my sub start_loop ($ua, $page, $tags ) {
   state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); $c->(@_);
-my $posts = get_posts($ua, $page, $tags );
+  my $posts = get_posts($ua, $page, $tags );
   if (defined $posts) {
-     download_posts($ua, $posts);
-     __SUB__->($ua, $page + 1, $tags);
-} else {
-  say "End";
-}
+    download_posts($ua, $posts);
+    __SUB__->($ua, $page + 1, $tags);
+  } else {
+    say "End";
+  }
 }
 
 sub abstract { "Gelbooru" }

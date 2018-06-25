@@ -38,7 +38,7 @@ sub compose (@fns) {
 }
 
 # [[http://pppurple.hatenablog.com/entry/2016/05/28/230722][高階関数perl（higher order perl） - abcdefg.....]]
-sub map :prototype($&$) ($self, $sub, $list)  {
+sub map :prototype($&$) ($sub, $list)  {
   if (is_plain_arrayref($list)) {
     my @arr = $list->@*;
     my @res = map { $sub->($_) } @arr;
@@ -49,12 +49,12 @@ sub map :prototype($&$) ($self, $sub, $list)  {
 }
 
 # [[https://stackoverflow.com/questions/5166662/perl-what-is-the-easiest-way-to-flatten-a-multidimensional-array][list - Perl: What is the easiest way to flatten a multidimensional array? - Stack Overflow]]
-sub flatten :prototype($$) ($self, $list)  {
-  $self->map(sub ($x) { $x->@*}, $list);
+sub flatten :prototype($$) ($list)  {
+  map(sub ($x) { $x->@*}, $list);
 }
 
-sub flatten_all :prototype($$) ($self, $list)  {
-  map { is_plain_arrayref($_) ? $self->flatten_all($_) : $_ } $list->@*;
+sub flatten_all :prototype($$) ($list)  {
+  map { is_plain_arrayref($_) ? __SUB__->($_) : $_ } $list->@*;
 }  
 
 !!1;

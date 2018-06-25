@@ -25,6 +25,7 @@ use Net::DNS::Lite;
 use Cache::LRU;
 use Regexp::Common qw<URI>;
 use Type::Params qw<compile>;
+use Type::Utils -all;
 use Types::Standard -types;
 use Types::URI -types;
 use Local::Chan::Types -types;
@@ -34,7 +35,11 @@ use Mojo::UserAgent;
 use DDP;
 no autovivification;
 
-const my $BOARD_SERVERS => +{
+my $BoardDefinitions = declare BoardDefinitions =>
+  as Map[Str, union([Str, ArrayRef])];
+
+const my $BOARD_SERVERS =>
+  $BoardDefinitions->(+{
   l  => 'dat',
   k  => 'cgi',
   7  => 'zip',
@@ -43,7 +48,8 @@ const my $BOARD_SERVERS => +{
   p  => 'zip',
   u  => 'cgi',
   b  => [qw<may jun dec>]
-};
+}
+);
 
 my sub get_directories :ReturnType(ArrayRef[Str]) () {
   my @files = path('.')->children;

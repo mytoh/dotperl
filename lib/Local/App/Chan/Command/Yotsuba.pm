@@ -50,7 +50,7 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
 my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
   state $c = compile(BoardName, HashRef); $c->(@_);
   my @images = map {
-    my $url = URI->new("https://i.4cdn.org");
+    my $url = URI->new("https://is2.4chan.org");
     my $filename = $_->{'tim'} . $_->{'ext'};
     $url->path_segments( $board, $filename);
     +{ filename => $filename,
@@ -102,7 +102,9 @@ my sub get_single ( $ua, $board, $thread ) {
   state $c = compile(MojoUserAgent, BoardName, ThreadId); $c->(@_);
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
-  if (defined $thread_data && ! is_thread_archived($thread_data)) {
+  if (defined $thread_data
+      && ! is_thread_archived($thread_data)
+     ) {
     say $thread;
     my $images = find_non_existent_images( $thread,
                                            parse_images( $board, $thread_data ) );

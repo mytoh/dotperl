@@ -60,3 +60,8 @@ requires 'Proc::Daemon';
   requires 'IO::Socket::SSL';
   requires 'Mojolicious';
 }
+
+{
+  requires 'Tk';
+  # requires 'Tk::More';
+}
