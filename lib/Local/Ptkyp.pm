@@ -7,7 +7,6 @@ use Moo;
 use MooX::LvalueAttribute;
 use MooX::XSConstructor;
 use MooX::HandlesVia;
-use MooX::TypeTiny;
 
 use v5.28;
 use utf8;
