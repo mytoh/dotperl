@@ -52,6 +52,7 @@ requires 'Types::URI';
 requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
 requires 'Proc::Daemon';
+requires 'Package::Alias';
 
 {
   requires 'EV';
@@ -64,4 +65,12 @@ requires 'Proc::Daemon';
 {
   requires 'Tk';
   # requires 'Tk::More';
+}
+
+{
+  requires 'Moo';
+  requires 'MooX::XSConstructor';
+  requires 'MooX::LvalueAttribute';
+  requires 'MooX::HandlesVia';
+  requires 'MooX::TypeTiny';
 }

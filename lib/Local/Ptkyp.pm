@@ -4,6 +4,10 @@
 package Local::Ptkyp;
 
 use Moo;
+use MooX::LvalueAttribute;
+use MooX::XSConstructor;
+use MooX::HandlesVia;
+use MooX::TypeTiny;
 
 use v5.28;
 use utf8;
@@ -24,27 +28,45 @@ use Tk::Menu;
 use Mojo::UserAgent;
 use List::AllUtils qw<first_index natatime>;
 use Proc::Daemon;
+use Package::Alias
+  PC => 'Local::Peercast::Channel';
+use Types::Standard -all;
+use Local::Peercast::Types::Channel -all;
 
 use namespace::clean;
 
-has master => (is => 'ro');
+has master => (is => 'ro',
+               required => 1);
+
+has config => (is => 'rw',
+               default => sub {
+                 +{
+                   yp_urls => [['sp',         'http://bayonet.ddo.jp/sp/index.txt'],
+                               ['yp',         'http://temp.orz.hm/yp/index.txt'],
+                               ['hktv',       'http://games.himitsukichi.com/hktv/index.txt'],
+                               ['turf',       'http://peercast.takami98.net/turf-page/index.txt'],
+                               ['oekaki',     'http://oekakiyp.appspot.com/index.txt'],
+                               ['eventyp',    'http://eventyp.xrea.jp/index.txt'],
+                               ['messageyp',  'http://peercast.takami98.net/message-yp/index.txt'],
+                               ['tjyp',       'http://gerogugu.web.fc2.com/tjyp/index.txt']],
+                   header_columns => [qw<Name
+                                         Genre
+                                         Description
+                                         Message
+                                         Viewer
+                                         Contact>],
+                 }
+               });
+
+has channels => (is => 'rw',
+                 isa => ArrayRef[Channel],
+                 handlesvia => 'Array',
+                );
+
+has ua => (is => 'rw');
 
 sub BUILD($self, $args) {
-  my $yp_urls = [['sp', 'http://bayonet.ddo.jp/sp/index.txt'],
-                 ['yp', 'http://temp.orz.hm/yp/index.txt'],
-                 ['hktv', 'http://games.himitsukichi.com/hktv/index.txt'],
-                 ['turf', 'http://peercast.takami98.net/turf-page/index.txt'],
-                 ['oekaki', 'http://oekakiyp.appspot.com/index.txt'],
-                 ['eventyp', 'http://eventyp.xrea.jp/index.txt'],
-                 ['messageyp', 'http://peercast.takami98.net/message-yp/index.txt'],
-                 ['tjyp', 'http://gerogugu.web.fc2.com/tjyp/index.txt']];
 
-  my $default_columns = [qw<Name
-                            Genre
-                            Description
-                            Message
-                            Viewer
-                            Contact>];
   my $status_text = '';
   my $logger = $self->make_log_sub(\$status_text);
 
@@ -69,7 +91,7 @@ sub BUILD($self, $args) {
                                   -foreground => 'white',
                                   -background => 'black',
                                   -header => 'true',
-                                  -columns => scalar($default_columns->@*),
+                                  -columns => scalar($self->config->{'header_columns'}->@*),
                                   -scrollbars => 'osoe',
                                   # -width => 70,
                                   # hide black border around HList when it's active
@@ -95,27 +117,13 @@ sub BUILD($self, $args) {
     -browsecmd => [ sub{ $_[0]->anchorClear(); }, $hlist],
    );
 
-
-  # menu
-  my $menubar = $mw->Menu(-type => 'menubar', -tearoff => 0,
-                          -foreground => 'white',
-                          -background => 'black',);
-  $mw->configure( -menu => $menubar );
-
-  my $menu_file = $mw->Menu(-type => 'normal', -tearoff => 0);
-  $menubar->add('cascade', -label => 'File', -menu => $menu_file);
-  $menu_file->add('command', -label => 'Exit', -underline => 0,
-                  -command => \&exit );
-
-  my $menu_channel = $mw->Menu(-type => 'normal', -tearoff => 0);
-  $menubar->add('cascade', -label => 'Channel', -menu => $menu_channel);
-  $menu_channel->add('command', -label => 'Update',
-                     -command => sub {$self->menu_channel_update($hlist, $yp_urls, $default_columns)} );
-  # $menu_file->separator;
+  $self->create_menus($hlist);
 
   # create hlist
-  $self->create_headers($hlist, $default_columns);
-  $self->create_channels_list($hlist, $yp_urls, $default_columns);
+  $self->create_headers($hlist, $self->config->{'header_columns'});
+  $self->create_channels_list($hlist,
+                              $self->config->{'yp_urls'},
+                              $self->config->{'header_columns'});
 
   # statusbar
   my $statusbar = $mw->Label(-borderwidth => 1, -relief => 'sunken', -anchor => 'w',
@@ -136,6 +144,28 @@ sub run($self) {
   MainLoop();
 }
 
+sub create_menus($self, $hlist) {
+
+  # menu
+  my $mw = $self->master;
+  my $menubar = $mw->Menu(-type => 'menubar', -tearoff => 0,
+                          -foreground => 'white',
+                          -background => 'black',);
+  $mw->configure( -menu => $menubar );
+  my $menu_file = $mw->Menu(-type => 'normal', -tearoff => 0);
+  $menubar->add('cascade', -label => 'File', -menu => $menu_file);
+  $menu_file->add('command', -label => 'Exit', -underline => 0,
+                  -command => \&exit );
+
+  my $menu_channel = $mw->Menu(-type => 'normal', -tearoff => 0);
+  $menubar->add('cascade', -label => 'Channel', -menu => $menu_channel);
+  $menu_channel->add('command', -label => 'Update',
+                     -command => sub {$self->menu_channel_update($hlist,
+                                                                 $self->config->{'yp_urls'},
+                                                                 $self->config->{'header_columns'})} );
+  # $menu_file->separator;
+}
+
 sub replace_chars($self, $text) {
   my $result = $text =~ s/&lt\;/</gr
     =~ s/&gt\;/>/gr
@@ -148,24 +178,23 @@ sub replace_chars($self, $text) {
 sub channel_to_obj ($self, $list) {
   # yp channel list definition
   # https://github.com/kumaryu/peercaststation/blob/3b7251c7f3e9ec6378a527bbe80822d51f585fe4/PeerCastStation/PeerCastStation.PCP/PCPYellowPageClient.cs
-  +{
-    name         => $list->[0],
-    channel_id   => $list->[1],
-    tracker      => $list->[2],
-    contact_url  => $list->[3],
-    genre        => $list->[4],
-    description  => $list->[5],
-    listeners    => $list->[6],
-    relays       => $list->[7],
-    bitrate      => $list->[8],
-    content_type => $list->[9],
-    artist       => $list->[10],
-    album        => $list->[11],
-    track_title  => $list->[12],
-    track_url    => $list->[13],
-    uptime       => $list->[15],
-    comment      => $list->[17],
-  };
+  PC->new(name         => $list->[0],
+          channel_id   => $list->[1],
+          tracker      => $list->[2],
+          contact_url  => $list->[3],
+          genre        => $list->[4],
+          description  => $list->[5],
+          listeners    => $list->[6],
+          relays       => $list->[7],
+          bitrate      => $list->[8],
+          content_type => $list->[9],
+          artist       => $list->[10],
+          album        => $list->[11],
+          track_title  => $list->[12],
+          track_url    => $list->[13],
+          uptime       => $list->[15],
+          comment      => $list->[17],
+         );
 }
 
 sub get_channels($self, $ua, $urls) {
@@ -201,11 +230,11 @@ sub add_row($self, $hlist, $row, $channel, $columns) {
   state $column_description_index = first_index { $_ eq 'Description' } $columns->@*;
   $hlist->add($row, -data => $channel);
   $hlist->itemCreate($row, $column_name_index,
-                     -text => decode_utf8($channel->{'name'}));
+                     -text => decode_utf8($channel->name));
   $hlist->itemCreate($row, $column_genre_index,
-                     -text => decode_utf8($channel->{'genre'}));
+                     -text => decode_utf8($channel->genre));
   $hlist->itemCreate($row, $column_description_index,
-                     -text => $self->replace_chars(decode_utf8($channel->{'description'})));
+                     -text => $self->replace_chars(decode_utf8($channel->description)));
 }
 
 
@@ -225,11 +254,11 @@ sub play_channel ($self, $hlist, $logger, $selected_entry) {
   } else {
     my $daemon = Proc::Daemon->new(
       exec_command => sprintf("mpv --force-window=immediate --no-ytdl http://peca2.koti:7144/stream/%s.%s?tip=%s",
-                              $data->{'channel_id'}, lc $data->{'content_type'}, $data->{'tracker'})
+                              $data->channel_id, lc $data->content_type, $data->tracker)
      );
     my $pid = $daemon->Init();
     $logger->(sprintf("playing %s (PID: %s)",
-                      decode_utf8($data->{'name'} ), $pid ));
+                      decode_utf8($data->name ), $pid ));
   }
 }
 
@@ -238,10 +267,10 @@ sub create_channels_list($self, $hlist, $urls, $columns) {
 
   my $ua = Mojo::UserAgent->new;
   $ua->transactor->name("Mozilla/5.0");
-  my $channels = $self->get_channels($ua, $urls);
-  foreach my $i (keys $channels->@*) {
+  $self->channels($self->get_channels($ua, $urls));
+  foreach my $i (keys $self->channels->@*) {
     $self->add_row($hlist, $i,
-                   $channels->[$i],
+                   $self->channels->[$i],
                    $columns);
   }
 }
