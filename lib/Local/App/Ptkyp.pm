@@ -1,7 +1,7 @@
 
 # https://www.perlmonks.org/?node_id=390782
 
-package Local::Ptkyp;
+package Local::App::Ptkyp;
 
 use Moo;
 use MooX::LvalueAttribute;
@@ -20,7 +20,7 @@ use re 'strict';
 use Tk;
 use Types::Standard -all;
 
-use Local::Ptkyp::View::ChannelList;
+use Local::App::Ptkyp::View::ChannelList;
 
 use namespace::clean;
 
@@ -34,7 +34,7 @@ has frames => (is => 'rw',
 
 sub BUILD($self, $args) {
 
-  my $frame_channel_list = Local::Ptkyp::View::ChannelList->new(
+  my $frame_channel_list = Local::App::Ptkyp::View::ChannelList->new(
     master =>  $self->master,
    );
   push $self->frames->@*, $frame_channel_list;

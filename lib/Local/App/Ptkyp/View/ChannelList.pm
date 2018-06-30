@@ -1,4 +1,4 @@
-package Local::Ptkyp::View::ChannelList;
+package Local::App::Ptkyp::View::ChannelList;
 
 use Moo;
 use Moo;

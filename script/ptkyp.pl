@@ -2,8 +2,8 @@
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
-use Local::Ptkyp;
+use Local::App::Ptkyp;
 use Tk;
 my $mw = MainWindow->new;
-my $app = Local::Ptkyp->new(master => $mw);
+my $app = Local::App::Ptkyp->new(master => $mw);
 $app->run;
