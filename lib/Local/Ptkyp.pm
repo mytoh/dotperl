@@ -62,7 +62,10 @@ has channels => (is => 'rw',
                  handlesvia => 'Array',
                 );
 
-has ua => (is => 'rw');
+has ua => (is => 'rw',
+           default => sub {
+             Mojo::UserAgent->new;
+           });
 
 sub BUILD($self, $args) {
 
@@ -196,10 +199,10 @@ sub channel_to_obj ($self, $list) {
          );
 }
 
-sub get_channels($self, $ua, $urls) {
+sub get_channels($self, $urls) {
   [map {
     my $url = $_->[1];
-    my $res = $ua->get($url)->result;
+    my $res = $self->ua->get($url)->result;
     if ($res->is_success) {
       my @lines = split /<>0\n/, $res->body;
       map { my $channel_infos = [split /<>/, $_];
@@ -264,9 +267,8 @@ sub play_channel ($self, $hlist, $logger, $selected_entry) {
 
 sub create_channels_list($self, $hlist, $urls, $columns) {
 
-  my $ua = Mojo::UserAgent->new;
-  $ua->transactor->name("Mozilla/5.0");
-  $self->channels($self->get_channels($ua, $urls));
+  $self->ua->transactor->name("Mozilla/5.0");
+  $self->channels($self->get_channels($urls));
   foreach my $i (keys $self->channels->@*) {
     $self->add_row($hlist, $i,
                    $self->channels->[$i],
