@@ -17,7 +17,6 @@ use open qw<:std :encoding(UTF-8)>;
 use experimental qw<signatures re_strict refaliasing declared_refs
                     script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
-use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 use Tk;
 use Types::Standard -all;
 
