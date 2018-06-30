@@ -35,6 +35,9 @@ use namespace::clean;
 has master => (is => 'ro',
                required => 1);
 
+has name => (is => 'ro',
+             default => sub {"channe_list"});
+
 has config => (is => 'rw',
                default => sub {
                  +{
