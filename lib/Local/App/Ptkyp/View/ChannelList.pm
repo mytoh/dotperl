@@ -77,19 +77,22 @@ sub BUILD ($self, $args){
   my $frame = $mw->Frame(-foreground => 'white',
                          -background => '#3d4956',
                          -relief => 'flat',);
-  my $notebook = $frame->NoteBook(-font => '{Noto Sans} 10',
                                   -background => '#555555',
                                   -relief => 'flat',
                                  );
   my $page_all = $notebook->add("all", -label => 'All');
   my $page_favorites = $notebook->add("favorites", -label => 'Favorites');
+  $self->notebook = $frame->NoteBook(
+    # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
+    -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
     -foreground => 'white',
     -background => '#3d4956',
     -backpagecolor => '#3d4956',
     -inactivebackground => '#3d4956',
 
   my $hlist = $page_all->Scrolled("HList",
-                                  -font => '{Noto Sans} 10',
+                                  -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
+                                  # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
                                   -relief => 'flat',
                                   -foreground => 'white',
                                   -background => '#3d4956',
@@ -130,7 +133,8 @@ sub BUILD ($self, $args){
 
   # statusbar
   my $statusbar = $mw->Label(-borderwidth => 1, -relief => 'sunken', -anchor => 'w',
-                             -font => 'Verdana',
+                             # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
+                             -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
                              -textvariable => \$status_text,
                              -background => 'black',
                              -foreground => 'white');
