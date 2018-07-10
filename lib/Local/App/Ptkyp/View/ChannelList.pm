@@ -68,6 +68,9 @@ has ua => (is => 'rw',
              Mojo::UserAgent->new;
            });
 
+has notebook => (is => 'rw',
+                 lvalue => 1);
+
 sub BUILD ($self, $args){
 
   my $mw = $self->master;
@@ -77,11 +80,6 @@ sub BUILD ($self, $args){
   my $frame = $mw->Frame(-foreground => 'white',
                          -background => '#3d4956',
                          -relief => 'flat',);
-                                  -background => '#555555',
-                                  -relief => 'flat',
-                                 );
-  my $page_all = $notebook->add("all", -label => 'All');
-  my $page_favorites = $notebook->add("favorites", -label => 'Favorites');
   $self->notebook = $frame->NoteBook(
     # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
     -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
@@ -89,6 +87,10 @@ sub BUILD ($self, $args){
     -background => '#3d4956',
     -backpagecolor => '#3d4956',
     -inactivebackground => '#3d4956',
+    -relief => 'flat',
+   );
+  my $page_all = $self->notebook->add("all", -label => 'All');
+  my $page_favorites = $self->notebook->add("favorites", -label => 'Favorites');
 
   my $hlist = $page_all->Scrolled("HList",
                                   -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
@@ -140,7 +142,7 @@ sub BUILD ($self, $args){
                              -foreground => 'white');
 
   $page_all->pack(-expand => 'true', -fill => 'both');
-  $notebook->pack(-expand => 'true', -fill => 'both');
+  $self->notebook->pack(-expand => 'true', -fill => 'both');
   $frame->pack(-expand => 'true', -fill => 'both');
   $hlist->pack(-expand => 'true', -fill => 'both');
   $statusbar->pack(-side => 'bottom', -fill => 'x');
@@ -203,16 +205,24 @@ sub channel_to_obj ($self, $list) {
 sub get_channels($self, $urls) {
   [map {
     my $url = $_->[1];
-    my $res = $self->ua->get($url)->result;
-    if ($res->is_success) {
-      my @lines = split /<>0\n/, $res->body;
-      map { my $channel_infos = [split /<>/, $_];
-            $self->channel_to_obj($channel_infos);
-          }
-        @lines;
-    } else {
-      ()
-    }
+    my @out = ();
+    $self->ua
+      ->get_p($url)
+      ->then( sub ($tx){
+                my $res = $tx->result;
+                if ($res->is_success) {
+                  my @lines = split /<>0\n/, $res->body;
+                  @out = map { my $channel_infos = [split /<>/, $_];
+                               $self->channel_to_obj($channel_infos);
+                             }
+                    @lines;
+                } else {
+                  @out = ();
+                }
+              }
+             )->wait;
+    $self->notebook->update;
+    @out;
   }
    $urls->@*];
 }
