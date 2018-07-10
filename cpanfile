@@ -13,6 +13,7 @@ requires 'File::Find::Rule';
 requires 'File::Find::Rule::LibMagic';
 requires 'File::Glob';
 requires 'File::MimeInfo';
+requires 'Image::Info';
 requires 'File::Slurper';
 requires 'File::Spec::Functions';
 requires 'File::XDG';
@@ -73,4 +74,6 @@ requires 'Package::Alias';
   requires 'MooX::LvalueAttribute';
   requires 'MooX::HandlesVia';
   requires 'MooX::TypeTiny';
+  requires 'MooX::StrictConstructor';
+  requires 'MooX::ChainedAttributes';
 }
