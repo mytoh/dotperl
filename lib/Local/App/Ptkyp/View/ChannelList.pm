@@ -75,23 +75,24 @@ sub BUILD ($self, $args){
   my $status_text = '';
   my $logger = $self->make_log_sub(\$status_text);
   my $frame = $mw->Frame(-foreground => 'white',
-                         -background => 'black',
+                         -background => '#3d4956',
                          -relief => 'flat',);
   my $notebook = $frame->NoteBook(-font => '{Noto Sans} 10',
-                                  -foreground => 'white',
                                   -background => '#555555',
-                                  -backpagecolor => 'black',
-                                  -inactivebackground => 'black',
                                   -relief => 'flat',
                                  );
   my $page_all = $notebook->add("all", -label => 'All');
   my $page_favorites = $notebook->add("favorites", -label => 'Favorites');
+    -foreground => 'white',
+    -background => '#3d4956',
+    -backpagecolor => '#3d4956',
+    -inactivebackground => '#3d4956',
 
   my $hlist = $page_all->Scrolled("HList",
                                   -font => '{Noto Sans} 10',
                                   -relief => 'flat',
                                   -foreground => 'white',
-                                  -background => 'black',
+                                  -background => '#3d4956',
                                   -header => 'true',
                                   -columns => scalar($self->config->{'header_columns'}->@*),
                                   -scrollbars => 'osoe',
@@ -101,7 +102,7 @@ sub BUILD ($self, $args){
                                   -selectborderwidth => 0,
                                   -selectbackground => 'SeaGreen3',);
   $hlist->configure(-command => sub ($entry){$self->play_channel($hlist, $logger, $entry)});
-  $hlist->Subwidget('corner')->configure(-background => 'black');
+  $hlist->Subwidget('corner')->configure(-background => '#3d4956');
   $hlist->Subwidget('yscrollbar')->configure(-background => 'black',
                                              -activerelief => 'flat',
                                              -relief => 'flat',
