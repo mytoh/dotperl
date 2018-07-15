@@ -100,8 +100,8 @@ sub BUILD ($self, $args){
                                   -background => '#3d4956',
                                   -header => 'true',
                                   -columns => scalar($self->config->{'header_columns'}->@*),
-                                  -scrollbars => 'osoe',
-                                  # -width => 70,
+                                  -scrollbars => 'osow',
+                                  # -width => 50,
                                   # hide black border around HList when it's active
                                   -highlightthickness => 0,
                                   -selectborderwidth => 0,
