@@ -54,6 +54,7 @@ requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
 requires 'Proc::Daemon';
 requires 'Package::Alias';
+requires 'namespace::clean';
 
 {
   requires 'EV';
