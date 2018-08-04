@@ -67,6 +67,7 @@ requires 'namespace::clean';
 {
   requires 'Tk';
   # requires 'Tk::More';
+  requires 'Tcl::pTk';
 }
 
 {
@@ -77,4 +78,6 @@ requires 'namespace::clean';
   requires 'MooX::TypeTiny';
   requires 'MooX::StrictConstructor';
   requires 'MooX::ChainedAttributes';
+  requires 'Mu';
+  requires 'Mew';
 }
