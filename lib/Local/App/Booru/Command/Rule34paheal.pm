@@ -31,7 +31,7 @@ use Return::Type;
 no autovivification;
 
 my sub format_tags :ReturnType(Str) ($tags) {
-  state $c = compile(ArrayRef[Str]); $c->(@_);
+  state $c = compile(ArrayRef[Str]); &{$c};
   if ( scalar $tags->@* > 1 ) {
     join "%20", $tags->@*;
   } else {
@@ -40,7 +40,7 @@ my sub format_tags :ReturnType(Str) ($tags) {
 }
 
 my sub is_get_successed :ReturnType(Bool) ($res) {
-  state $c = compile(MojoMessageResponse); $c->(@_);
+  state $c = compile(MojoMessageResponse); &{$c};
   if ( $res->is_success && $res->body eq "[]" ) {
     !!0;
   } elsif ( $res->is_success ) {
@@ -51,7 +51,7 @@ my sub is_get_successed :ReturnType(Bool) ($res) {
 }
 
 my sub get_posts :ReturnType(Maybe[ArrayRef[Str]]) ($ua, $page, $tags ) {
-  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); $c->(@_);
+  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); &{$c};
 
   my $formatted_tags = format_tags($tags);
   my $limit          = 100;
@@ -62,11 +62,11 @@ my sub get_posts :ReturnType(Maybe[ArrayRef[Str]]) ($ua, $page, $tags ) {
   my $res = $ua->get($url->as_string)->result;
   if ( is_get_successed($res) ) {
     say "Getting page ${page}";
-  my @links = $res->dom
+    my @links = $res->dom
       ->find('section#imagelist div a')
-    ->grep(sub {$_->text eq "Image Only"})
-    ->map(attr => 'href')
-    ->each;
+      ->grep(sub {$_->text eq "Image Only"})
+      ->map(attr => 'href')
+      ->each;
     \@links;
   } else {
     undef;
@@ -74,7 +74,7 @@ my sub get_posts :ReturnType(Maybe[ArrayRef[Str]]) ($ua, $page, $tags ) {
 }
 
 my sub download_post ( $ua, $link ) {
-  state $c = compile(MojoUserAgent, Str); $c->(@_);
+  state $c = compile(MojoUserAgent, Str); &{$c};
   if ( defined $link ) {
     my $output_file = basename($link);
     if ( !-f $output_file ) {
@@ -83,26 +83,26 @@ my sub download_post ( $ua, $link ) {
         ->content
         ->asset
         ->move_to($output_file);
+    }
   }
-}
 }
 
 my sub download_posts ($ua, $links) {
-  state $c = compile(MojoUserAgent, ArrayRef[Str]); $c->(@_);
+  state $c = compile(MojoUserAgent, ArrayRef[Str]); &{$c};
   foreach my $post ( $links->@* ) {
     download_post( $ua, $post );
   }
 }
 
 my sub start_loop ($ua, $page, $tags ) {
-  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); $c->(@_);
-my $links = get_posts($ua, $page, $tags );
+  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); &{$c};
+  my $links = get_posts($ua, $page, $tags );
   if (defined $links) {
-     download_posts($ua, $links);
-     __SUB__->($ua, $page + 1, $tags);
-} else {
-  say "End";
-}
+    download_posts($ua, $links);
+    __SUB__->($ua, $page + 1, $tags);
+  } else {
+    say "End";
+  }
 }
 
 sub abstract { "Rule34.xxx" }

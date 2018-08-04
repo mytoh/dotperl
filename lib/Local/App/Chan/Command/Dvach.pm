@@ -38,18 +38,18 @@ my sub get_directories :ReturnType(ArrayRef) () {
 }
 
 my sub is_number :ReturnType(Bool) ($x) {
-  state $c = compile(Str); $c->(@_);
+  state $c = compile(Str); &{$c};
   state $re = qr{\A\d+\z};
   $x =~ $re;
 }
 
 my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
-  state $c = compile(ArrayRef[Str]); $c->(@_);
+  state $c = compile(ArrayRef[Str]); &{$c};
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
-  state $c = compile(BoardName, HashRef); $c->(@_);
+  state $c = compile(BoardName, HashRef); &{$c};
   my @images = map {
     map {
       my $filename = basename($_->{'path'});
@@ -65,12 +65,12 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $images ) {
-  state $c = compile(ThreadId, ArrayRef[File]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[File]); &{$c};
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $images->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(FurlHttp, BoardName, ThreadId); &{$c};
   my $url = URI->new("https://2ch.hk");
   $url->path_segments( $board, 'res', "${thread}.json" );
 
@@ -85,7 +85,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub is_thread_archived ($thread_data) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
 
   if ($thread_data->{'posts'}[0]{'archived'}) {
     !!1;
@@ -95,7 +95,7 @@ my sub is_thread_archived ($thread_data) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(FurlHttp, BoardName, ThreadId); &{$c};
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
   if (defined $thread_data && ! is_thread_archived($thread_data)) {
@@ -120,7 +120,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(FurlHttp, BoardName); $c->(@_);
+  state $c = compile(FurlHttp, BoardName); &{$c};
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -128,7 +128,7 @@ my sub get_all ( $ua, $board ) {
 }
 
 my sub get ( $opt, $args ) {
-  state $c = compile(Object, ArrayRef); $c->(@_);
+  state $c = compile(Object, ArrayRef); &{$c};
   my $sleep_second = 60 * 5;
   my $ua           = Furl::HTTP->new(
     agent     => 'Mozilla/5.0',

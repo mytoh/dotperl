@@ -40,16 +40,16 @@ my $BoardDefinitions = declare BoardDefinitions =>
 
 const my $BOARD_SERVERS =>
   $BoardDefinitions->(+{
-  l  => 'dat',
-  k  => 'cgi',
-  7  => 'zip',
-  16 => 'dat',
-  40 => 'may',
-  p  => 'zip',
-  u  => 'cgi',
-  b  => [qw<may jun dec>]
-}
-);
+    l  => 'dat',
+    k  => 'cgi',
+    7  => 'zip',
+    16 => 'dat',
+    40 => 'may',
+    p  => 'zip',
+    u  => 'cgi',
+    b  => [qw<may jun dec>]
+  }
+                     );
 
 my sub get_directories :ReturnType(ArrayRef[Str]) () {
   my @files = path('.')->children;
@@ -65,12 +65,12 @@ my sub is_number :ReturnType(Bool) ($x) {
 }
 
 my sub thread_directories :ReturnType(ArrayRef[ThreadId]) ($dirs) {
-  state $c = compile(ArrayRef[ThreadId]); $c->(@_);
+  state $c = compile(ArrayRef[ThreadId]); &{$c};
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
-  state $c = compile(HashRef, Server); $c->(@_);
+  state $c = compile(HashRef, Server); &{$c};
   my ( $board, $thread ) = $obj->@{qw<board thread>};
   my $url = "https://${server}.2chan.net/${board}/res/${thread}.htm";
   my $res = $obj->{'mojo'}->get( $url )->result;
@@ -82,24 +82,24 @@ my sub fetch_b_thread :ReturnType(Bool) ( $obj, $server ) {
 }
 
 my sub uri_base_name :ReturnType(Str) ($uri) {
-  state $c = compile(Uri); $c->(@_);
+  state $c = compile(Uri); &{$c};
   my @segs = $uri->path_segments;
   $segs[$#segs];
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[Uri]) ( $thread, $image_links ) {
-  state $c = compile(ThreadId, ArrayRef[Uri]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[Uri]); &{$c};
   [ grep { !-f catfile( $thread, uri_base_name($_) ) } $image_links->@* ];
 }
 
 my sub find_b_server :ReturnType(Server) ($obj) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   $obj->{'board'} = 'b';
   first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
 }
 
 my sub scrape_image_list :ReturnType(Maybe[ArrayRef[Uri]]) ($obj) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   my ( $mojo, $server, $board, $thread ) = $obj->@{qw<mojo server board thread>};
   my $base_url = "https://${server}.2chan.net";
   my $url = "${base_url}/${board}/res/${thread}.htm";
@@ -115,7 +115,7 @@ my sub scrape_image_list :ReturnType(Maybe[ArrayRef[Uri]]) ($obj) {
 }
 
 my sub select_server :ReturnType(Server) ($obj) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   my $board = $obj->{'board'};
   if ( $board eq 'b' ) {
     find_b_server($obj);
@@ -125,7 +125,7 @@ my sub select_server :ReturnType(Server) ($obj) {
 }
 
 my sub get_single ($obj) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   my ( $ua, $thread, $board ) = $obj->@{qw<ua thread board>};
   $obj->{'server'} = select_server($obj);
   if ( $obj->{'server'} ) {
@@ -149,7 +149,7 @@ my sub get_single ($obj) {
 }
 
 my sub get_all ($obj) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( $dirs->@* ) {
     $obj->{'thread'} = $thread;

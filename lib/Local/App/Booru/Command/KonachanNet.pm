@@ -30,7 +30,7 @@ use Return::Type;
 no autovivification;
 
 my sub format_tags :ReturnType(Str) ($tags) {
-  state $c = compile(ArrayRef[Str]); $c->(@_);
+  state $c = compile(ArrayRef[Str]); &{$c};
   if ( scalar $tags->@* > 1 ) {
     join " ", $tags->@*;
   } else {
@@ -39,7 +39,7 @@ my sub format_tags :ReturnType(Str) ($tags) {
 }
 
 my sub is_get_successed :ReturnType(Bool) ($res) {
-  state $c = compile(MojoMessageResponse); $c->(@_);
+  state $c = compile(MojoMessageResponse); &{$c};
   if ( $res->is_success && $res->body eq "[]" ) {
     !!0;
   } elsif ( $res->is_success ) {
@@ -50,7 +50,7 @@ my sub is_get_successed :ReturnType(Bool) ($res) {
 }
 
 my sub get_posts :ReturnType(Maybe[HashRef]) ($ua, $page, $tags ) {
-  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); $c->(@_);
+  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); &{$c};
 
 
   my $formatted_tags = format_tags($tags);
@@ -74,7 +74,7 @@ my sub get_posts :ReturnType(Maybe[HashRef]) ($ua, $page, $tags ) {
 }
 
 my sub download_post ( $ua, $post ) {
-  state $c = compile(MojoUserAgent, HashRef); $c->(@_);
+  state $c = compile(MojoUserAgent, HashRef); &{$c};
   if ( defined $post->{'file_url'} ) {
     my $url = 'https:' . $post->{'file_url'};
     my $output_file =
@@ -90,14 +90,14 @@ my sub download_post ( $ua, $post ) {
 }
 
 my sub download_posts ($ua, $posts) {
-  state $c = compile(MojoUserAgent, ArrayRef[HashRef]); $c->(@_);
+  state $c = compile(MojoUserAgent, ArrayRef[HashRef]); &{$c};
   foreach my $post ( $posts->@* ) {
     download_post( $ua, $post );
   }
 }
 
 my sub start_loop ($ua, $page, $tags ) {
-  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); $c->(@_);
+  state $c = compile(MojoUserAgent, Num, ArrayRef[Str]); &{$c};
   my $posts = get_posts($ua, $page, $tags );
   if (defined $posts) {
     download_posts($ua, $posts);

@@ -31,7 +31,7 @@ use Return::Type;
 no autovivification;
 
 my sub format_tags :ReturnType(ArrayRef) ($tags) {
-  state $c = compile(ArrayRef[Str]); $c->(@_);
+  state $c = compile(ArrayRef[Str]); &{$c};
   if ( scalar $tags->@* > 1 ) {
     join " ", $tags->@*;
   } else {
@@ -40,7 +40,7 @@ my sub format_tags :ReturnType(ArrayRef) ($tags) {
 }
 
 my sub is_get_successed :ReturnType(Bool) ($res) {
-  state $c = compile(HttpResponse); $c->(@_);
+  state $c = compile(HttpResponse); &{$c};
   if ( $res->is_success && $res->content eq "[]" ) {
     !!0;
   } elsif ( $res->is_success ) {
@@ -51,7 +51,7 @@ my sub is_get_successed :ReturnType(Bool) ($res) {
 }
 
 my sub get_posts :ReturnType(Maybe[HashRef]) ( $page, $tags ) {
-  state $c = compile(Num, ArrayRef[Str]); $c->(@_);
+  state $c = compile(Num, ArrayRef[Str]); &{$c};
   my $ua = LWP::UserAgent->new;
   $ua->agent("Mozilla/5.0");
 
@@ -78,7 +78,7 @@ my sub get_posts :ReturnType(Maybe[HashRef]) ( $page, $tags ) {
 }
 
 my sub download_post ( $ua, $post ) {
-  state $c = compile(FurlHttp, HashRef); $c->(@_);
+  state $c = compile(FurlHttp, HashRef); &{$c};
   if ( defined $post->{'large_file_url'} ) {
     my $output_file =
       $post->{'id'} . '-' . basename( $post->{'large_file_url'} );
@@ -96,7 +96,7 @@ my sub download_post ( $ua, $post ) {
 }
 
 my sub download_posts ($posts) {
-  state $c = compile(ArrayRef[HashRef]); $c->(@_);
+  state $c = compile(ArrayRef[HashRef]); &{$c};
   my $ua = Furl::HTTP->new(
     agent     => 'Mozilla/5.0',
     inet_aton => \&Net::DNS::Lite::inet_aton
@@ -107,7 +107,7 @@ my sub download_posts ($posts) {
 }
 
 my sub start_loop ( $page, $tags ) {
-  state $c = compile(Num, ArrayRef[Str]); $c->(@_);
+  state $c = compile(Num, ArrayRef[Str]); &{$c};
   my $posts = get_posts( $page, $tags );
   if (defined $posts) {
     download_posts($posts);

@@ -49,7 +49,7 @@ my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
 }
 
 my sub parse_images :ReturnType(ArrayRef[File]) ( $json ) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
   my @first_images = map {$_->{'path'} } $json->{'files'}->@*;
   my @other_files = map { $_->{'files'}} $json->{'posts'}->@*;
   my @other_images = map { $_->{'path'} } flatten(\@other_files);
@@ -62,12 +62,12 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $json ) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $image ) {
-  state $c = compile(ThreadId, ArrayRef[File]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[File]); &{$c};
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $image->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(FurlHttp, BoardName, ThreadId); &{$c};
   my $url = URI->new("https://mewch.net");
   $url->path_segments( $board, 'res', "${thread}.json" );
 
@@ -82,7 +82,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub download_file ( $ua, $thread, $image) {
-  state $c = compile(FurlHttp, ThreadId, File); $c->(@_);
+  state $c = compile(FurlHttp, ThreadId, File); &{$c};
   my $output_file = catfile( $thread, $image->{'filename'} );
 
   my $fh = path($output_file)->openw_raw;
@@ -95,7 +95,7 @@ my sub download_file ( $ua, $thread, $image) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(FurlHttp, BoardName, ThreadId); &{$c};
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
   if (defined $thread_data) {
     say $thread;
@@ -115,7 +115,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(FurlHttp, BoardName); $c->(@_);
+  state $c = compile(FurlHttp, BoardName); &{$c};
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -123,7 +123,7 @@ my sub get_all ( $ua, $board ) {
 }
 
 my sub get ( $opt, $args ) {
-  state $c = compile(Object, ArrayRef); $c->(@_);
+  state $c = compile(Object, ArrayRef); &{$c};
   my $sleep_second = 60 * 5;
   my $ua           = Furl::HTTP->new(
     agent     => 'Mozilla/5.0',

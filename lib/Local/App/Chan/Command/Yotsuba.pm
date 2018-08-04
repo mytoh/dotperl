@@ -37,18 +37,18 @@ my sub get_directories :ReturnType(ArrayRef) () {
 }
 
 my sub is_number :ReturnType(Bool) ($x) {
-  state $c = compile(Str); $c->(@_);
+  state $c = compile(Str); &{$c};
   state $re = qr{\A\d+\z};
   $x =~ $re;
 }
 
 my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
-  state $c = compile(ArrayRef[Str]); $c->(@_);
+  state $c = compile(ArrayRef[Str]); &{$c};
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
-  state $c = compile(BoardName, HashRef); $c->(@_);
+  state $c = compile(BoardName, HashRef); &{$c};
   my @images = map {
     my $url = URI->new("https://is2.4chan.org");
     my $filename = $_->{'tim'} . $_->{'ext'};
@@ -61,12 +61,12 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $board, $json ) {
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[File]) ( $thread, $images ) {
-  state $c = compile(ThreadId, ArrayRef[File]); $c->(@_);
+  state $c = compile(ThreadId, ArrayRef[File]); &{$c};
   [ grep { !-f catfile( $thread, $_->{'filename'} ) } $images->@* ];
 }
 
 my sub is_get_successed :ReturnType(Bool) ($res) {
-  state $c = compile(MojoMessageResponse); $c->(@_);
+  state $c = compile(MojoMessageResponse); &{$c};
   if ( $res->is_success && $res->body eq "[]" ) {
     !!0;
   } elsif ( $res->is_success ) {
@@ -77,7 +77,7 @@ my sub is_get_successed :ReturnType(Bool) ($res) {
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
-  state $c = compile(MojoUserAgent, BoardName, ThreadId); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName, ThreadId); &{$c};
   my $url = URI->new("https://a.4cdn.org");
   $url->path_segments( $board, 'thread', "${thread}.json" );
   my $res = $ua->get($url->as_string)->result;
@@ -89,7 +89,7 @@ my sub fetch_thread_data :ReturnType(Maybe[HashRef]) ( $ua, $board, $thread ) {
 }
 
 my sub is_thread_archived ($thread_data) {
-  state $c = compile(HashRef); $c->(@_);
+  state $c = compile(HashRef); &{$c};
 
   if ($thread_data->{'posts'}[0]{'archived'}) {
     !!1;
@@ -99,7 +99,7 @@ my sub is_thread_archived ($thread_data) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(MojoUserAgent, BoardName, ThreadId); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName, ThreadId); &{$c};
   my $thread_data = fetch_thread_data( $ua, $board, $thread );
 
   if (defined $thread_data
@@ -131,7 +131,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(MojoUserAgent, BoardName); $c->(@_);
+  state $c = compile(MojoUserAgent, BoardName); &{$c};
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
@@ -139,7 +139,7 @@ my sub get_all ( $ua, $board ) {
 }
 
 my sub get ( $opt, $args ) {
-  state $c = compile(Object, ArrayRef); $c->(@_);
+  state $c = compile(Object, ArrayRef); &{$c};
   my $sleep_second = 60 * 5;
   my $ua = Mojo::UserAgent->new;
   if ( $opt->all ) {

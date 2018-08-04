@@ -52,33 +52,33 @@ my sub is_number :ReturnType(Bool) ($x) {
 }
 
 my sub thread_directories :ReturnType(ArrayRef) ($dirs) {
-  state $c = compile(ArrayRef); $c->(@_);
+  state $c = compile(ArrayRef); &{$c};
   [ grep { is_number($_) } $dirs->@* ]
 }
 
 my sub make_url :ReturnType(Uri) ($base, @segments) {
-  state $c = compile(Str, slurpy ArrayRef[Str]); $c->(@_);
+  state $c = compile(Str, slurpy ArrayRef[Str]); &{$c};
   my $url = URI->new($base);
   $url->path_segments(@segments);
   $url;
 }
 
 my sub find_non_existent_images :ReturnType(ArrayRef[MechLink]) ( $thread, $uris) {
-  state $c = compile(ThreadId, ArrayRef[MechLink]); $c->(@_);
-  [ grep { 
+  state $c = compile(ThreadId, ArrayRef[MechLink]); &{$c};
+  [ grep {
     !-f catfile( $thread, basename($_->url_abs->path)) ;
   }
     $uris->@* ];
 }
 
 my sub fetch_thread_data :ReturnType(Maybe[ArrayRef[MechLink]]) ( $mech, $board, $thread ) {
-  state $c = compile(Mech, BoardName, ThreadId); $c->(@_);
+  state $c = compile(Mech, BoardName, ThreadId); &{$c};
   my $url = make_url($BASE_URL, $board, 'res', "${thread}.html" );
   $mech->agent_alias('Windows Mozilla');
   $mech->get($url);
   if ($mech->success) {
     my $re_url = qr[media\.8ch\.net/((${board}/src)|file_store)] ;
-    my @uris = $mech->find_all_links( tag => 'a', 
+    my @uris = $mech->find_all_links( tag => 'a',
                                       url_regex => $re_url);
     my @image_uris = uniq_by { $_->url_abs->as_string } @uris;
     \@image_uris;
@@ -88,7 +88,7 @@ my sub fetch_thread_data :ReturnType(Maybe[ArrayRef[MechLink]]) ( $mech, $board,
 }
 
 my sub download_file ( $ua, $thread, $uri) {
-  state $c = compile(FurlHttp, ThreadId, MechLink); $c->(@_);
+  state $c = compile(FurlHttp, ThreadId, MechLink); &{$c};
   my $output_file = catfile( $thread, basename($uri->url_abs->path));
   my $fh = path($output_file)->openw_raw;
   $fh->autoflush;
@@ -100,7 +100,7 @@ my sub download_file ( $ua, $thread, $uri) {
 }
 
 my sub get_single ( $ua, $board, $thread ) {
-  state $c = compile(FurlHttp, BoardName, ThreadId); $c->(@_);
+  state $c = compile(FurlHttp, BoardName, ThreadId); &{$c};
   my $mech = WWW::Mechanize->new();
   my $uris = fetch_thread_data( $mech, $board, $thread );
   if (defined $uris && $uris->@*) {
@@ -119,7 +119,7 @@ my sub get_single ( $ua, $board, $thread ) {
 }
 
 my sub get_all ( $ua, $board ) {
-  state $c = compile(FurlHttp, BoardName); $c->(@_);
+  state $c = compile(FurlHttp, BoardName); &{$c};
   my $dirs = thread_directories( get_directories() );
   foreach my $thread ( reverse $dirs->@* ) {
     get_single( $ua, $board, $thread );
