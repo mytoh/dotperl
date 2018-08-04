@@ -6,7 +6,7 @@ use strictures 2;
 use autodie ':all';
 use utf8::all;
 use open qw<:std :encoding(UTF-8)>;
-use experimental qw<signatures re_strict refaliasing declared_refs 
+use experimental qw<signatures re_strict refaliasing declared_refs
                     script_run alpha_assertions regex_sets const_attr>;
 use re 'strict';
 use File::Glob qw<:bsd_glob>;
@@ -23,7 +23,7 @@ use Exporter::Shiny qw<download_file
                        forever>;
 
 sub download_file ( $ua, $url, $file ) {
-  state $c = compile(FurlHttp, Uri, Str); $c->(@_);
+  state $c = compile(FurlHttp, Uri, Str); &{$c};
 
   my $fh = path($file)->openw_raw;
 
@@ -35,7 +35,7 @@ sub download_file ( $ua, $url, $file ) {
 }
 
 sub forever : prototype(&;$) ( $sub, $sleep ) {
-  state $c = compile(CodeRef, Num); $c->(@_);
+  state $c = compile(CodeRef, Num); &{$c};
   while (1) {
     $sub->();
     sleep $sleep;
