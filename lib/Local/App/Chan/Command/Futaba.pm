@@ -47,7 +47,8 @@ const my $BOARD_SERVERS =>
     40 => 'may',
     p  => 'zip',
     u  => 'cgi',
-    b  => [qw<may jun dec>]
+    b  => [qw<may jun dec>],
+    3 => 'zip'
   }
                      );
 
