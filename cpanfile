@@ -46,10 +46,16 @@ requires 'WWW::Mechanize';
 requires 'utf8::all';
 requires 'Exporter::Shiny';
 requires 'Unix::PID';
-requires 'Type::Tiny';
-requires 'Type::Tiny::XS';
-requires 'Return::Type';
-requires 'Types::URI';
+{
+  requires 'Type::Tiny';
+  requires 'Type::Tiny::XS';
+  requires 'Ref::Util::XS';
+  requires 'Return::Type';
+  requires 'Types::URI';
+  requires 'Devel::StackTrace';
+  requires 'Reply::Plugin::TypeTiny';
+  requires 'Devel::LexAlias';
+}
 requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
 requires 'Proc::Daemon';
