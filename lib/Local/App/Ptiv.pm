@@ -210,8 +210,8 @@ sub prev_image ($self) {
 
 sub BUILD ($self, $args) {
 
-  $self->master->configure((-background => 'black',
-                            -height => 400, -width => 400));
+  $self->master->configure(-background => 'black',
+                           -height => 400, -width => 400);
   my $mw = $self->master;
   $mw->bind('<q>', ['destroy', $mw]);
   $mw->bind('<f>', sub {$self->toggle_fullscreen()});
