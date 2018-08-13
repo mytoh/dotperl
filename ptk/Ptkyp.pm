@@ -4,9 +4,6 @@
 package Local::App::Ptkyp;
 
 use Moo;
-use MooX::LvalueAttribute;
-use MooX::XSConstructor;
-use MooX::HandlesVia;
 
 use v5.28;
 use utf8;
@@ -33,7 +30,7 @@ has frames => (is => 'rw',
               );
 
 sub BUILD($self, $args) {
-
+  $self->master->geometry('500x500');
   my $frame_channel_list = Local::App::Ptkyp::View::ChannelList->new(
     master =>  $self->master,
    );

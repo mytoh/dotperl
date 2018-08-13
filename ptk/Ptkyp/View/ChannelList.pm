@@ -1,10 +1,6 @@
 package Local::App::Ptkyp::View::ChannelList;
 
 use Moo;
-use Moo;
-use MooX::LvalueAttribute;
-use MooX::XSConstructor;
-use MooX::HandlesVia;
 
 use v5.28;
 use utf8;
@@ -42,13 +38,14 @@ has config => (is => 'rw',
                default => sub {
                  +{
                    yp_urls => [['sp',         'http://bayonet.ddo.jp/sp/index.txt'],
-                               ['yp',         'http://temp.orz.hm/yp/index.txt'],
-                               ['hktv',       'http://games.himitsukichi.com/hktv/index.txt'],
-                               ['turf',       'http://peercast.takami98.net/turf-page/index.txt'],
-                               ['oekaki',     'http://oekakiyp.appspot.com/index.txt'],
-                               ['eventyp',    'http://eventyp.xrea.jp/index.txt'],
-                               ['messageyp',  'http://peercast.takami98.net/message-yp/index.txt'],
-                               ['tjyp',       'http://gerogugu.web.fc2.com/tjyp/index.txt']],
+                               # ['tp',         'http://temp.orz.hm/yp/index.txt'],
+                               # ['hktv',       'http://games.himitsukichi.com/hktv/index.txt'],
+                               # ['turf',       'http://peercast.takami98.net/turf-page/index.txt'],
+                               # ['oekaki',     'http://oekakiyp.appspot.com/index.txt'],
+                               # ['eventyp',    'http://eventyp.xrea.jp/index.txt'],
+                               # ['messageyp',  'http://peercast.takami98.net/message-yp/index.txt'],
+                               # ['tjyp',       'http://gerogugu.web.fc2.com/tjyp/index.txt']
+                              ],
                    header_columns => [qw<Name
                                          Genre
                                          Description
@@ -60,7 +57,6 @@ has config => (is => 'rw',
 
 has channels => (is => 'rw',
                  isa => ArrayRef[Channel],
-                 handlesvia => 'Array',
                 );
 
 has ua => (is => 'rw',
@@ -80,20 +76,25 @@ sub BUILD ($self, $args){
   my $frame = $mw->Frame(-foreground => 'white',
                          -background => '#3d4956',
                          -relief => 'flat',);
-  $self->notebook = $frame->NoteBook(
+  $frame->pack(-expand => 'true', -fill => 'both');
+  my $notebook = $frame->NoteBook(
     # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
-    -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
+    # -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
     -foreground => 'white',
     -background => '#3d4956',
     -backpagecolor => '#3d4956',
     -inactivebackground => '#3d4956',
     -relief => 'flat',
+    -ipadx => 10,
+    -ipady => 10,
+    # -borderwidth => 0,
    );
-  my $page_all = $self->notebook->add("all", -label => 'All');
+  $self->notebook($notebook);
+  $notebook->pack(-expand => 'true', -fill => 'both');
+  my $page_all = $self->notebook->add("all", -label => 'All', -anchor => 'center');
   my $page_favorites = $self->notebook->add("favorites", -label => 'Favorites');
-
   my $hlist = $page_all->Scrolled("HList",
-                                  -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
+                                  # -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
                                   # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
                                   -relief => 'flat',
                                   -foreground => 'white',
@@ -101,22 +102,23 @@ sub BUILD ($self, $args){
                                   -header => 'true',
                                   -columns => scalar($self->config->{'header_columns'}->@*),
                                   -scrollbars => 'osow',
+                                  -borderwidth => 1,
                                   # -width => 50,
                                   # hide black border around HList when it's active
                                   -highlightthickness => 0,
                                   -selectborderwidth => 0,
                                   -selectbackground => 'SeaGreen3',);
-  $hlist->configure(-command => sub ($entry){$self->play_channel($hlist, $logger, $entry)});
+  $hlist->configure(-command => sub ($entry) {$self->play_channel($hlist, $logger, $entry)});
   $hlist->Subwidget('corner')->configure(-background => '#3d4956');
   $hlist->Subwidget('yscrollbar')->configure(-background => 'black',
                                              -activerelief => 'flat',
                                              -relief => 'flat',
-                                             -borderwidth => 0,
+                                             -borderwidth => 1,
                                              -elementborderwidth => 0);
   $hlist->Subwidget('xscrollbar')->configure(-background => 'black',
                                              -activerelief => 'flat',
                                              -relief => 'flat',
-                                             -borderwidth => 0,
+                                             -borderwidth => 1,
                                              -elementborderwidth => 0);
 
   # remove dotte line from selected item
@@ -136,7 +138,7 @@ sub BUILD ($self, $args){
   # statusbar
   my $statusbar = $mw->Label(-borderwidth => 1, -relief => 'sunken', -anchor => 'w',
                              # -font => '-adobe-utopia-regular-r-normal--12-120-75-75-p-67-iso10646-1',
-                             -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
+                             # -font => '-misc-fixed-medium-r-normal--10-*-75-75-c-60-iso10646-1',
                              -textvariable => \$status_text,
                              -background => 'black',
                              -foreground => 'white');
@@ -277,7 +279,6 @@ sub play_channel ($self, $hlist, $logger, $selected_entry) {
 
 
 sub create_channels_list($self, $hlist, $urls, $columns) {
-
   $self->ua->transactor->name("Mozilla/5.0");
   $self->channels($self->get_channels($urls));
   foreach my $i (keys $self->channels->@*) {
