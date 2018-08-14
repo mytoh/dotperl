@@ -1,7 +1,7 @@
 
 package Local::App::Ptiv;
 
-use Moo;
+use Mu;
 use MooX::LvalueAttribute;
 use MooX::XSConstructor;
 use MooX::HandlesVia;
@@ -32,49 +32,38 @@ no indirect 'fatal';
 no bareword::filehandles;
 no autovivification;
 
-has master => ( is => 'ro',
-                reuired => 1);
+ro 'master' ;
 
-has target_file => (is => 'rw',
-                    default => sub { "." });
+rw target_file => (default => sub { "." });
 
-has current_file => (is => 'rw',
-                     init_arg => undef,
-                     predicate => 1,
-                     lvalue => 1);
-has imager => (is => 'rw',
-               init_arg => undef,
-               predicate => 1,
-               lvalue => 1);
-has imager_scaled => (is => 'rw',
-                      init_arg => undef,
-                      predicate => 1,
-                      lvalue => 1);
-has scaled_height => (is => 'rw',
-                      init_arg => undef,
-                      predicate => 1,
-                      lvalue => 1);
-has scaled_width => (is => 'rw',
-                     init_arg => undef,
-                     predicate => 1,
-                     lvalue => 1);
-has photo_widget => (is => 'rw',
-                     init_arg => undef,
-                     predicate => 1,
-                     lvalue => 1);
-has photo_label => (is => 'rw',
-                    init_arg => undef,
+rw current_file => (required => 0,
                     predicate => 1,
                     lvalue => 1);
-has file_list => (is => 'rw',
-                  init_arg => undef,
-                  predicate => 1,
-                  lvalue => 1);
-has current_file_index => (is => 'rw',
-                           init_arg => undef,
-                           predicate => 1,
-                           lvalue => 1,
-                           default => sub { 0; });
+rw imager => (required => 0,
+              predicate => 1,
+              lvalue => 1);
+rw imager_scaled => (required => 0,
+                     predicate => 1,
+                     lvalue => 1);
+rw scaled_height => (required => 0,
+                     predicate => 1,
+                     lvalue => 1);
+rw scaled_width => (required => 0,
+                    predicate => 1,
+                    lvalue => 1);
+rw photo_widget => (required => 0,
+                    predicate => 1,
+                    lvalue => 1);
+rw photo_label => (required => 0,
+                   predicate => 1,
+                   lvalue => 1);
+rw file_list => (required => 0,
+                 predicate => 1,
+                 lvalue => 1);
+rw current_file_index => (required => 0,
+                          predicate => 1,
+                          lvalue => 1,
+                          default => sub { 0; });
 
 sub detect_type ($self, $file)  {
   my $type = image_type($file)->{'file_type'};
