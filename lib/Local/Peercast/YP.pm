@@ -34,8 +34,8 @@ sub _channel_to_object ($self, $list) {
                channel_id   => $list->[1],
                tracker      => $list->[2],
                contact_url  => $list->[3],
-               genre        => $genre ? decode_utf8($genre) : $genre,
-               description  => $desc ? $self->modify_channel_description(decode_utf8($desc)) : $desc,
+               genre        => $genre ? decode_utf8($genre) : ' ',
+               description  => $desc ? $self->modify_channel_description(decode_utf8($desc)) : ' ',
                listeners    => $list->[6],
                relays       => $list->[7],
                bitrate      => $list->[8],
@@ -45,7 +45,7 @@ sub _channel_to_object ($self, $list) {
                track_title  => $list->[12],
                track_url    => $list->[13],
                uptime       => $list->[15],
-               comment      => $comment ? decode_utf8($comment) : $comment,
+               comment      => $comment ? decode_utf8($comment) : ' ',
               );
 }
 
