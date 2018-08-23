@@ -46,6 +46,7 @@ sub _channel_to_object ($self, $list) {
                track_url    => $list->[13],
                uptime       => $list->[15],
                comment      => $comment ? decode_utf8($comment) : ' ',
+               yp           => $self->name,
               );
 }
 
