@@ -19,6 +19,7 @@ ro [qw< name
         track_title
         track_url
         uptime
-        comment>];
+        comment
+        yp>];
 
 !!1;
