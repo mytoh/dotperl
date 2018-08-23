@@ -12,6 +12,7 @@ use Package::Alias
 use namespace::clean;
 
 ro [qw<name url>];
+rw channels => (required => 0);
 
 sub modify_channel_description ($self, $text){
   my $result = $text =~ s/&lt\;/</gr
@@ -67,6 +68,7 @@ sub get_channel ($self) {
               }
             }
            )->wait;
+  $self->channels(\@out);
   \@out;
 }
 
