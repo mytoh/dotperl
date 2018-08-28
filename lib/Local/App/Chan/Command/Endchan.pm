@@ -22,7 +22,6 @@ use File::Slurper qw<read_text>;
 use Term::ANSIColor qw<colored>;
 use Regexp::Common qw<URI>;
 use List::Flatten::XS qw<flatten>;
-use Const::Fast qw<const>;
 use File::Basename::Extra qw<basename>;
 use List::AllUtils qw<uniq>;
 use Type::Params qw<compile>;
@@ -32,9 +31,10 @@ use Type::Utils -all;
 use Local::Chan::Types -types;
 use Local::Chan::Util qw<forever>;
 use Return::Type;
+use PerlX::Define;
 no autovivification;
 
-const my $BASE_URL => 'https://endchan.xyz';
+define BASE_URL = 'https://endchan.xyz';
 
 my sub get_directories :ReturnType(ArrayRef[Str]) () {
   my @files = path('.')->children;
@@ -58,7 +58,7 @@ my sub parse_images :ReturnType(ArrayRef[HashRef]) ( $board, $json ) {
   my @other_images = map { $_->{'path'} } flatten(\@other_files);
   my @images = uniq (@first_images, @other_images);
   my @image_objects = map {
-    my $uri = URI->new_abs($_, $BASE_URL);
+    my $uri = URI->new_abs($_, BASE_URL);
     +{ filename => basename($_), url => $uri}
   } @images;
   \@image_objects;

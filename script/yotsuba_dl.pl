@@ -12,26 +12,26 @@ use re 'strict';
 use File::chdir;
 use File::Spec::Functions qw<catdir>;
 use Time::HiRes qw<sleep>;
-use Const::Fast qw<const>;
 use IPC::System::Simple qw<systemx>;
+use PerlX::Define;
 
 my sub yotsuba ($dir) {
-    my @children = qw<huone kuvat sivusto 4chan>;
-    local $CWD = catdir( <~>, @children, $dir );
-    # systemx( 'yotsuba.pl', '--all', $dir );
-    systemx( 'chan.pl', 'yotsuba', '--all', $dir );
+  my @children = qw<huone kuvat sivusto 4chan>;
+  local $CWD = catdir( <~>, @children, $dir );
+  # systemx( 'yotsuba.pl', '--all', $dir );
+  systemx( 'chan.pl', 'yotsuba', '--all', $dir );
 }
 
 my sub main ($dirs) {
-    while (1) {
-        foreach my $dir ( $dirs->@* ) {
-            say $dir;
-            yotsuba $dir;
-        }
-        say "sleeping...";
-        sleep 300;
+  while (1) {
+    foreach my $dir ( $dirs->@* ) {
+      say $dir;
+      yotsuba $dir;
     }
+    say "sleeping...";
+    sleep 300;
+  }
 }
 
-const my $targets => [qw<trash w wg g>];
-main($targets);
+define TARGETS = [qw<trash w wg g>];
+main(TARGETS);

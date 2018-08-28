@@ -30,9 +30,10 @@ use Types::Standard -types;
 use Local::Chan::Types -types;
 use Local::Chan::Util qw<forever>;
 use Return::Type;
+use PerlX::Define;
 no autovivification;
 
-const my $BASE_URL => 'https://mewch.net';
+define BASE_URL = 'https://mewch.net';
 
 my sub get_directories :ReturnType(ArrayRef) () {
   my @files = path('.')->children;
@@ -55,7 +56,7 @@ my sub parse_images :ReturnType(ArrayRef[File]) ( $json ) {
   my @other_images = map { $_->{'path'} } flatten(\@other_files);
   my @images = uniq (@first_images, @other_images);
   my @image_objects = map {
-    my $uri = URI->new_abs($_, $BASE_URL);
+    my $uri = URI->new_abs($_, BASE_URL);
     +{ filename => basename($_), url => $uri}
   } @images;
   \@image_objects;

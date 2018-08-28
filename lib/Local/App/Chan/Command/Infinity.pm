@@ -35,11 +35,12 @@ use Local::Chan::Util qw<forever>;
 use Return::Type;
 use IO::Handle;
 use Data::Dumper;
+use PerlX::Define;
 no autovivification;
 
-const my $HOST => '8ch.net';
-const my $BASE_URL => "https://${HOST}";
-const my $BASE_MEDIA_URL => "https://media.${HOST}";
+define HOST = '8ch.net';
+define BASE_URL = "https://8ch.net";
+define BASE_MEDIA_URL = "https://media.8ch.net";
 
 my sub get_directories :ReturnType(ArrayRef) () {
   my @files = path('.')->children;
@@ -73,7 +74,7 @@ my sub find_non_existent_images :ReturnType(ArrayRef[MechLink]) ( $thread, $uris
 
 my sub fetch_thread_data :ReturnType(Maybe[ArrayRef[MechLink]]) ( $mech, $board, $thread ) {
   state $c = compile(Mech, BoardName, ThreadId); &{$c};
-  my $url = make_url($BASE_URL, $board, 'res', "${thread}.html" );
+  my $url = make_url(BASE_URL, $board, 'res', "${thread}.html" );
   $mech->agent_alias('Windows Mozilla');
   $mech->get($url);
   if ($mech->success) {

@@ -19,7 +19,6 @@ use Term::ANSIColor qw<colored>;
 use URI;
 use List::AllUtils qw<first uniq any>;
 use List::UtilsBy qw<uniq_by>;
-use Const::Fast qw<const>;
 use Furl::HTTP;
 use Net::DNS::Lite;
 use Cache::LRU;
@@ -33,24 +32,22 @@ use Local::Chan::Util qw<download_file forever>;
 use Return::Type;
 use Mojo::UserAgent;
 use DDP;
+use PerlX::Define;
 no autovivification;
 
 my $BoardDefinitions = declare BoardDefinitions =>
   as Map[Str, union([Str, ArrayRef])];
 
-const my $BOARD_SERVERS =>
-  $BoardDefinitions->(+{
-    l  => 'dat',
-    k  => 'cgi',
-    7  => 'zip',
-    16 => 'dat',
-    40 => 'may',
-    p  => 'zip',
-    u  => 'cgi',
-    b  => [qw<may jun dec>],
-    3 => 'zip'
-  }
-                     );
+define BOARD_SERVERS = +{l  => 'dat',
+                         k  => 'cgi',
+                         7  => 'zip',
+                         16 => 'dat',
+                         40 => 'may',
+                         p  => 'zip',
+                         u  => 'cgi',
+                         b  => [qw<may jun dec>],
+                         3 => 'zip'};
+$BoardDefinitions->(BOARD_SERVERS);
 
 my sub get_directories :ReturnType(ArrayRef[Str]) () {
   my @files = path('.')->children;
@@ -96,7 +93,7 @@ my sub find_non_existent_images :ReturnType(ArrayRef[Uri]) ( $thread, $image_lin
 my sub find_b_server :ReturnType(Server) ($obj) {
   state $c = compile(HashRef); &{$c};
   $obj->{'board'} = 'b';
-  first { fetch_b_thread( $obj, $_ ) } $BOARD_SERVERS->{b}->@*;
+  first { fetch_b_thread( $obj, $_ ) } BOARD_SERVERS->{b}->@*;
 }
 
 my sub scrape_image_list :ReturnType(Maybe[ArrayRef[Uri]]) ($obj) {
@@ -121,7 +118,7 @@ my sub select_server :ReturnType(Server) ($obj) {
   if ( $board eq 'b' ) {
     find_b_server($obj);
   } else {
-    $BOARD_SERVERS->{$board};
+    BOARD_SERVERS->{$board};
   }
 }
 
