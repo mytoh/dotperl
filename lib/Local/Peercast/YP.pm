@@ -53,7 +53,7 @@ sub _channel_to_object ($self, $list) {
 }
 
 sub get_channel ($self) {
-  my $url = $self->url;
+  my $url = $self->url =~ /index\.txt$/ ? $self->url : $self->url . 'index.txt';
   my @out = ();
   state $ua = Mojo::UserAgent->new;
 
