@@ -1,7 +1,9 @@
 package Local::Peercast::Channel;
 
-use Mu;
 use strictures 2;
+use true;
+
+use Mu;
 use namespace::clean;
 
 ro [qw< name
@@ -21,5 +23,3 @@ ro [qw< name
         uptime
         comment
         yp>];
-
-!!1;

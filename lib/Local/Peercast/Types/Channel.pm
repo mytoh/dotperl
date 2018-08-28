@@ -10,7 +10,6 @@ use Types::Common::Numeric -types;
 use v5.28;
 use strict;
 use warnings;
+use true;
 
 class_type Channel, {class => 'Local::Peercast::Channel' };
-
-!!1;

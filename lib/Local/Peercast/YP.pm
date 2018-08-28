@@ -1,14 +1,16 @@
 
 package Local::Peercast::YP;
 
-use Mu;
 use v5.28;
 use strictures 2;
-use experimental qw<signatures>;
 use Mojo::UserAgent;
 use Unicode::UTF8 qw<decode_utf8 encode_utf8>;
 use Package::Alias
   Channel => 'Local::Peercast::Channel';
+use true;
+
+use Mu;
+use experimental qw<signatures>;
 use namespace::clean;
 
 ro [qw<name url>];
@@ -72,5 +74,3 @@ sub get_channel ($self) {
   $self->channels(\@out);
   \@out;
 }
-
-!!1;
