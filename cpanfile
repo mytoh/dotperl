@@ -5,6 +5,7 @@ requires 'Cache::LRU';
 requires 'Carp::Always';
 requires 'Config::PL';
 requires 'Const::Fast';
+requires 'PerlX::Define';
 requires 'Cwd::utf8';
 requires 'DDP';
 requires 'Desktop::Notify';
@@ -46,6 +47,9 @@ requires 'WWW::Mechanize';
 requires 'utf8::all';
 requires 'Exporter::Shiny';
 requires 'Unix::PID';
+requires 'thanks';
+requires 'true';
+
 {
   requires 'Type::Tiny';
   requires 'Type::Tiny::XS';
@@ -55,6 +59,7 @@ requires 'Unix::PID';
   requires 'Devel::StackTrace';
   requires 'Reply::Plugin::TypeTiny';
   requires 'Devel::LexAlias';
+  requires 'Lexical::TypeTiny';
 }
 requires 'IO::Socket::PortState';
 requires 'Acme::LookOfDisapproval';
